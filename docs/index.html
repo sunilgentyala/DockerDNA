@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DockerDNA — Layer-by-Layer Container Security DNA Analysis</title>
+  <meta name="description" content="DockerDNA fills every gap OWASP DockSec leaves open: secrets detection with Shannon entropy, docker-compose.yml scanning, CIS Docker Benchmark v1.6 compliance, SBOM (CycloneDX 1.5), and SARIF output for GitHub Security tab.">
+  <meta name="keywords" content="docker security, container security, secrets detection, CIS benchmark, SBOM, SARIF, docker-compose, DevSecOps, supply chain security, OWASP, DockSec alternative">
+  <meta name="author" content="Sunil Gentyala, Independent Researcher">
+  <meta property="og:title" content="DockerDNA — Layer-by-Layer Container Security DNA Analysis">
+  <meta property="og:description" content="Secrets detection (regex + entropy), docker-compose scanning, CIS Docker Benchmark compliance, CycloneDX SBOM, and SARIF output. Fills every gap DockSec leaves open.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sunilgentyala.github.io/DockerDNA/">
+  <meta property="og:image" content="https://opengraph.githubassets.com/1/sunilgentyala/DockerDNA">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DockerDNA — Layer-by-Layer Container Security DNA Analysis">
+  <meta name="twitter:description" content="Secrets + entropy detection, compose scanning, CIS compliance, SBOM, SARIF. Open source. MIT.">
+  <link rel="canonical" href="https://sunilgentyala.github.io/DockerDNA/">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #21262d;
+      --border-hover: #30363d;
+      --accent: #f0883e;
+      --accent2: #58a6ff;
+      --text: #c9d1d9;
+      --muted: #8b949e;
+      --green: #3fb950;
+      --red: #f85149;
+      --purple: #bc8cff;
+      --teal: #2dd4bf;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(13,17,23,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .nav-brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+    .nav-brand sup {
+      font-size: 0.55rem;
+      color: var(--muted);
+      font-weight: 400;
+      letter-spacing: 0;
+      vertical-align: super;
+    }
+    .nav-links { display: flex; gap: 1.5rem; font-size: 0.9rem; }
+    .nav-links a { color: var(--muted); transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-github {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.35rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: var(--text) !important;
+      transition: border-color 0.15s !important;
+    }
+    .nav-github:hover { border-color: var(--accent) !important; text-decoration: none !important; }
+
+    /* HERO */
+    .hero-wrap {
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(88,166,255,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(63,185,80,0.07) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .hero {
+      position: relative;
+      text-align: center;
+      padding: 5.5rem 2rem 3.5rem;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge-orange { background: rgba(240,136,62,0.15); color: var(--accent);  border: 1px solid rgba(240,136,62,0.3); }
+    .badge-blue   { background: rgba(88,166,255,0.12); color: var(--accent2); border: 1px solid rgba(88,166,255,0.25); }
+    .badge-green  { background: rgba(63,185,80,0.12);  color: var(--green);   border: 1px solid rgba(63,185,80,0.25); }
+    .badge-purple { background: rgba(188,140,255,0.12);color: var(--purple);  border: 1px solid rgba(188,140,255,0.25); }
+    .badge-teal   { background: rgba(45,212,191,0.12); color: var(--teal);    border: 1px solid rgba(45,212,191,0.25); }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 span { color: var(--accent2); }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto 2.25rem;
+      line-height: 1.7;
+    }
+    .btn-row { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); text-decoration: none; }
+    .btn-primary {
+      background: var(--accent);
+      color: #0d1117;
+      box-shadow: 0 0 20px rgba(240,136,62,0.25);
+    }
+    .btn-primary:hover { box-shadow: 0 0 32px rgba(240,136,62,0.4); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--border-hover); }
+
+    /* TECH STRIP */
+    .platforms {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2.5rem;
+      padding: 1.75rem 2rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      margin: 3rem 0;
+    }
+    .platform-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .platform-list  { display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .platform-item  { display: flex; align-items: center; gap: 0.5rem; font-size: 0.93rem; font-weight: 600; color: var(--text); }
+    .platform-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* STATS */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 4rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .stat-num   { font-size: 2.8rem; font-weight: 800; color: var(--accent); letter-spacing: -0.04em; line-height: 1; }
+    .stat-label { font-size: 0.82rem; color: var(--muted); margin-top: 0.35rem; }
+
+    /* SECTION */
+    section { max-width: 1080px; margin: 0 auto; padding: 3.5rem 2rem; }
+    .section-label {
+      font-size: 0.72rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    h2 { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.6rem; }
+    .section-sub { color: var(--muted); margin-bottom: 2.5rem; max-width: 560px; line-height: 1.65; }
+
+    /* CARDS */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+    .card:hover { border-color: var(--accent); box-shadow: 0 0 24px rgba(240,136,62,0.08); transform: translateY(-2px); }
+    .card-icon  { font-size: 1.5rem; margin-bottom: 0.8rem; }
+    .card h3    { font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .card p     { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+    .card-skills { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.9rem; }
+    .skill-chip {
+      font-size: 0.72rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+    }
+
+    /* WHY BANNER */
+    .why-banner {
+      background: linear-gradient(135deg, rgba(88,166,255,0.06) 0%, rgba(63,185,80,0.04) 100%);
+      border: 1px solid rgba(88,166,255,0.18);
+      border-radius: 12px;
+      padding: 2.5rem;
+      margin-bottom: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    .why-item h4 { font-size: 0.9rem; font-weight: 700; color: var(--accent2); margin-bottom: 0.4rem; }
+    .why-item p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* ARCHITECTURE DIAGRAM */
+    .arch-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      overflow-x: auto;
+      margin-bottom: 2rem;
+    }
+    .arch-diagram pre {
+      color: var(--accent2);
+      font-size: 0.8rem;
+      line-height: 1.7;
+      font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+    }
+
+    /* STEPS */
+    .steps { display: flex; flex-direction: column; gap: 0.75rem; }
+    .step {
+      display: flex; gap: 1rem; align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.1rem 1.25rem;
+      transition: border-color 0.15s;
+    }
+    .step:hover { border-color: var(--border-hover); }
+    .step-num {
+      min-width: 28px; height: 28px;
+      background: rgba(88,166,255,0.1);
+      border: 1px solid rgba(88,166,255,0.25);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: var(--accent2); font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .step h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .step p  { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+    .step code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.78rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.05rem 0.3rem;
+      color: var(--accent2);
+    }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    td:first-child { font-weight: 600; color: var(--text); }
+    tr:hover td { background: rgba(255,255,255,0.015); }
+    .check   { color: var(--green); }
+    .cross   { color: var(--red); }
+    .partial { color: var(--muted); font-size: 0.82rem; }
+    .highlight-row td { background: rgba(88,166,255,0.05); }
+    .highlight-row td:first-child { color: var(--accent2); }
+    .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; color: var(--accent2); }
+
+    /* INSTALL */
+    .install-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+    .install-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .install-card:hover { border-color: var(--border-hover); }
+    .install-header {
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .install-body { padding: 1rem; }
+    pre {
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 0.9rem;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+      color: var(--green);
+      line-height: 1.65;
+    }
+    .install-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.65rem; line-height: 1.5; }
+
+    /* SECURITY GRID */
+    .security-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    .security-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .security-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+    .security-icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .security-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .security-card p  { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    /* STAR CTA */
+    .star-cta {
+      background: linear-gradient(135deg, rgba(88,166,255,0.07) 0%, rgba(63,185,80,0.05) 100%);
+      border: 1px solid rgba(88,166,255,0.18);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      margin: 0 2rem;
+    }
+    .star-cta h2 { font-size: 1.6rem; margin-bottom: 0.6rem; }
+    .star-cta p  { color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.75rem; line-height: 1.6; }
+    .star-cta-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* AUTHOR */
+    .author-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      max-width: 640px;
+    }
+    .author-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 800; color: #0d1117; flex-shrink: 0;
+    }
+    .author-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .author-role { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.8rem; line-height: 1.5; }
+    .author-links { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+    .author-link {
+      font-size: 0.82rem; padding: 0.3rem 0.7rem;
+      border-radius: 5px; border: 1px solid var(--border); color: var(--muted);
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .author-link:hover { color: var(--text); border-color: var(--accent); text-decoration: none; }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 2rem;
+      font-size: 0.84rem; color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    .section-divider { border: none; border-top: 1px solid var(--border); }
+
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 2.1rem; }
+      .author-card { flex-direction: column; }
+      .stats { gap: 2rem; }
+      .star-cta { margin: 0 1rem; padding: 2rem 1rem; }
+      .nav-links a:not(.nav-github):not(:last-child) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-brand">DockerDNA<sup>security</sup></span>
+  <div class="nav-links">
+    <a href="#gaps">DockSec Gaps</a>
+    <a href="#scanners">Scanners</a>
+    <a href="#compare">Compare</a>
+    <a href="#install">Install</a>
+    <a href="https://github.com/sunilgentyala/DockerDNA" class="nav-github" target="_blank">
+      &#9733; GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div class="hero">
+    <div class="badge-row">
+      <span class="badge badge-blue">Open Source</span>
+      <span class="badge badge-orange">CIS Docker Benchmark v1.6</span>
+      <span class="badge badge-green">CycloneDX 1.5 SBOM</span>
+      <span class="badge badge-teal">SARIF 2.1.0</span>
+      <span class="badge badge-purple">MIT License</span>
+    </div>
+    <h1>Container security at the<br><span>DNA level</span></h1>
+    <p class="hero-sub">
+      Secrets detection with Shannon entropy analysis, docker-compose.yml scanning,
+      CIS Docker Benchmark v1.6 compliance, SBOM generation, and SARIF output &mdash;
+      everything OWASP DockSec leaves uncovered.
+    </p>
+    <div class="btn-row">
+      <a href="https://github.com/sunilgentyala/DockerDNA" class="btn btn-primary" target="_blank">
+        &#9733;&nbsp; Star on GitHub
+      </a>
+      <a href="#install" class="btn btn-outline">
+        Get started &darr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- TECH STRIP -->
+<div class="platforms">
+  <span class="platform-label">Built with</span>
+  <div class="platform-list">
+    <div class="platform-item"><span class="platform-dot" style="background:#58a6ff"></span> Python 3.11+</div>
+    <div class="platform-item"><span class="platform-dot" style="background:#3fb950"></span> PyYAML</div>
+    <div class="platform-item"><span class="platform-dot" style="background:#f0883e"></span> CIS v1.6</div>
+    <div class="platform-item"><span class="platform-dot" style="background:#2dd4bf"></span> CycloneDX 1.5</div>
+    <div class="platform-item"><span class="platform-dot" style="background:#bc8cff"></span> SARIF 2.1.0</div>
+    <div class="platform-item"><span class="platform-dot" style="background:#f85149"></span> Anthropic Claude</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div><div class="stat-num">26</div><div class="stat-label">Tests Passing (pytest)</div></div>
+  <div><div class="stat-num">20+</div><div class="stat-label">Secret Pattern Signatures</div></div>
+  <div><div class="stat-num">14</div><div class="stat-label">CIS Docker Benchmark Controls</div></div>
+  <div><div class="stat-num">4</div><div class="stat-label">Output Formats (JSON, HTML, SARIF, SBOM)</div></div>
+</div>
+
+<!-- THE GAPS -->
+<section id="gaps">
+  <div class="section-label">The problem</div>
+  <h2>What existing tools miss entirely</h2>
+  <p class="section-sub">
+    OWASP DockSec wraps Trivy, Hadolint, and Docker Scout with AI explanations &mdash; and does it well.
+    But the entire class of runtime and composition misconfigurations is invisible to it.
+    DockerDNA was built to fill those gaps.
+  </p>
+
+  <div class="why-banner">
+    <div class="why-item">
+      <h4>No compose scanner</h4>
+      <p>DockSec only accepts a Dockerfile. Privileged mode, Docker socket mounts, missing resource limits,
+         and host networking in docker-compose.yml are never flagged &mdash; not by DockSec, Trivy, or Hadolint.</p>
+    </div>
+    <div class="why-item">
+      <h4>No secrets detection</h4>
+      <p>Trivy finds known CVEs; Hadolint checks syntax. Neither scans for hardcoded AWS keys,
+         GitHub tokens, database URIs, or JWT tokens embedded across Dockerfiles and .env files.</p>
+    </div>
+    <div class="why-item">
+      <h4>No entropy analysis</h4>
+      <p>Regex patterns miss custom or rotated credentials. Shannon entropy analysis is the only way
+         to catch high-entropy strings that look like secrets but match no known pattern.</p>
+    </div>
+    <div class="why-item">
+      <h4>No CIS compliance score</h4>
+      <p>DockSec produces severity buckets. DockerDNA maps every finding to a specific CIS Docker
+         Benchmark v1.6 control and produces a pass/fail scorecard with a 0&ndash;100% compliance score.</p>
+    </div>
+    <div class="why-item">
+      <h4>No SARIF output</h4>
+      <p>GitHub Advanced Security requires SARIF to annotate PRs in the Security tab. This has been an
+         open DockSec issue (&#35;45) since launch. DockerDNA ships SARIF 2.1.0 by default.</p>
+    </div>
+    <div class="why-item">
+      <h4>No SBOM generation</h4>
+      <p>Supply chain transparency requires a Software Bill of Materials. DockerDNA parses every
+         apt-get, pip, npm, apk, and yum install to produce a CycloneDX 1.5 BOM with PURL identifiers.</p>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:1rem;">The four-scanner pipeline</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h4>Secrets Engine &mdash; Regex + Shannon Entropy</h4>
+        <p>Scans Dockerfiles, docker-compose.yml, .env files, and any project files.
+           Pattern matching covers 20+ known secret formats (AWS, GCP, GitHub, Stripe, JWT, DB URIs&hellip;).
+           Entropy analysis with threshold &ge;&nbsp;4.5 bits/char catches unknown high-entropy tokens that regex never will.
+           <br><br>
+           <code>H(X) = -&sum; p(x) log&#8322; p(x)</code> &nbsp;&rarr;&nbsp; flag if H &ge; 4.5 and length &ge; 20 chars.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h4>docker-compose.yml Scanner &mdash; CIS Section 5</h4>
+        <p>Parses every service definition in YAML. Checks for
+           <code>privileged: true</code>, <code>cap_add: [ALL]</code>, Docker socket volume mounts,
+           <code>network_mode: host</code>, missing memory/CPU limits, missing <code>read_only</code>,
+           missing <code>no-new-privileges</code>, missing AppArmor profile, and hardcoded env secrets.
+           Every finding is tagged with its CIS Docker Benchmark v1.6 control ID.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h4>Dockerfile + Supply Chain Scanner &mdash; Layer Attribution</h4>
+        <p>Parses the Dockerfile layer-by-layer. Detects <code>:latest</code> tags without digest pinning,
+           unnecessary packages (<code>curl</code>, <code>vim</code>, <code>gcc</code>&hellip;), missing
+           <code>USER</code> and <code>HEALTHCHECK</code>, secrets leaking across multi-stage builds,
+           and SSH server installation. Each FROM image receives a 0&ndash;100 supply chain risk score
+           based on registry trust, tag specificity, and Docker Content Trust status.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <h4>CIS Compliance Mapper + Report Generation</h4>
+        <p>All findings are aggregated and mapped to CIS Docker Benchmark v1.6 controls.
+           A pass/fail scorecard is produced. Reports are written in all requested formats:
+           <code>JSON</code> (full structured data), <code>HTML</code> (interactive dashboard),
+           <code>SARIF 2.1.0</code> (GitHub Security tab), and <code>CycloneDX 1.5 SBOM</code>.
+           A CI threshold gate (<code>--threshold HIGH</code>) exits with code 1 if findings
+           at that severity or above are present.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ARCHITECTURE -->
+<section id="scanners">
+  <div class="section-label">Architecture</div>
+  <h2>Five scanners. One unified report.</h2>
+  <p class="section-sub">
+    DockerDNA runs all sub-scanners in sequence and assembles findings into a single
+    structured report before writing output formats.
+  </p>
+
+  <div class="arch-diagram">
+    <pre>
+  Dockerfile          docker-compose.yml      .env / project files
+      |                       |                        |
+      v                       v                        v
++---------------------+ +-----------------+ +--------------------+
+|  DockerfileScanner  | | ComposeScanner  | |  SecretsScanner    |
+|  - Layer parsing    | | - CIS Sect. 5   | |  - 20+ regex pats  |
+|  - CIS Sect. 4      | | - Env secrets   | |  - Shannon entropy |
+|  - Multi-stage leak | | - Resource lims | |  - Redaction       |
++---------------------+ +-----------------+ +--------------------+
+          |                      |                     |
+          +----------+           |          +----------+
+                     |           |          |
+                     v           v          v
+               +-----------------------------------+
+               |        SupplyChainScanner         |
+               |  - Registry trust scoring         |
+               |  - Digest pinning check           |
+               |  - DOCKER_CONTENT_TRUST           |
+               +-----------------------------------+
+                              |
+                              v
+               +-----------------------------------+
+               |         ComplianceMapper          |
+               |  - CIS Docker Benchmark v1.6      |
+               |  - Pass / Fail / Not-Checked      |
+               |  - 0-100 compliance score         |
+               +-----------------------------------+
+                              |
+          +-------------------+-------------------+
+          |                   |                   |
+          v                   v                   v
+     report.json         report.html         report.sarif
+     (full data)      (dashboard UI)    (GitHub Security tab)
+                                               |
+                                               v
+                                    sbom.cyclonedx.json
+                                      (CycloneDX 1.5)
+                                               |
+                                               v (optional)
+                                      AI Remediation
+                                    (Anthropic Claude)</pre>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">&#128273;</div>
+      <h3>secrets.py &mdash; Dual-Mode Detection</h3>
+      <p>Two complementary strategies: compiled regex for 20+ known secret formats,
+         and Shannon entropy analysis for unknown high-entropy tokens.
+         Values are automatically redacted in reports.</p>
+      <div class="card-skills">
+        <span class="skill-chip">aws-keys</span>
+        <span class="skill-chip">github-tokens</span>
+        <span class="skill-chip">jwt</span>
+        <span class="skill-chip">db-uris</span>
+        <span class="skill-chip">entropy&ge;4.5</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128230;</div>
+      <h3>compose.py &mdash; Runtime Misconfig Scanner</h3>
+      <p>YAML parser covering every CIS Section 5 control: privileged mode,
+         capability escalation, Docker socket mounts, host networking,
+         missing resource limits, read-only filesystem, and no-new-privileges.</p>
+      <div class="card-skills">
+        <span class="skill-chip">CIS-5.3</span>
+        <span class="skill-chip">CIS-5.4</span>
+        <span class="skill-chip">CIS-5.9</span>
+        <span class="skill-chip">CIS-5.13</span>
+        <span class="skill-chip">CIS-5.14</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128279;</div>
+      <h3>supply_chain.py &mdash; Risk Scoring</h3>
+      <p>Every FROM image receives a 0&ndash;100 supply chain risk score based on
+         registry trust (official vs community vs self-hosted), digest pinning,
+         Docker Content Trust status, and malicious image name patterns.</p>
+      <div class="card-skills">
+        <span class="skill-chip">CIS-4.5</span>
+        <span class="skill-chip">digest-pinning</span>
+        <span class="skill-chip">registry-trust</span>
+        <span class="skill-chip">content-trust</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128203;</div>
+      <h3>compliance.py &mdash; CIS Scorecard</h3>
+      <p>Aggregates all scanner findings and maps them to CIS Docker Benchmark v1.6 controls.
+         Produces a full pass/fail/not-checked scorecard and a 0&ndash;100% compliance percentage.</p>
+      <div class="card-skills">
+        <span class="skill-chip">CIS-4.1</span>
+        <span class="skill-chip">CIS-4.6</span>
+        <span class="skill-chip">CIS-4.9</span>
+        <span class="skill-chip">CIS-4.10</span>
+        <span class="skill-chip">14 controls</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128220;</div>
+      <h3>sbom.py &mdash; CycloneDX SBOM</h3>
+      <p>Parses every package manager install instruction (apt-get, pip, npm, apk, yum)
+         to produce a CycloneDX 1.5 BOM with PURL identifiers, layer attribution,
+         and build-stage annotations. NTIA minimum-elements compliant.</p>
+      <div class="card-skills">
+        <span class="skill-chip">cyclonedx-1.5</span>
+        <span class="skill-chip">purl</span>
+        <span class="skill-chip">apt-get</span>
+        <span class="skill-chip">pip</span>
+        <span class="skill-chip">npm</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-icon">&#128268;</div>
+      <h3>sarif.py &mdash; GitHub Security Tab</h3>
+      <p>SARIF 2.1.0 output maps every finding to a rule with severity, help URI,
+         and source location. Upload to GitHub Advanced Security to get inline PR
+         annotations &mdash; zero additional integration required.</p>
+      <div class="card-skills">
+        <span class="skill-chip">sarif-2.1.0</span>
+        <span class="skill-chip">github-adv-security</span>
+        <span class="skill-chip">pr-annotations</span>
+        <span class="skill-chip">oasis-tcs</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- WHAT IT DETECTS -->
+<section>
+  <div class="section-label">Detection coverage</div>
+  <h2>What DockerDNA finds</h2>
+  <p class="section-sub">Findings across five scanners, mapped to CIS Docker Benchmark v1.6 controls.</p>
+
+  <div class="security-grid">
+    <div class="security-card">
+      <div class="security-icon">&#128272;</div>
+      <h3>Hardcoded Secrets</h3>
+      <p>AWS access keys, Google API keys, GitHub tokens, Stripe keys, JWT tokens, RSA private keys,
+         database connection strings, and 15+ more patterns. Plus Shannon entropy detection for unknowns.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#9888;</div>
+      <h3>Privileged Containers</h3>
+      <p><code>privileged: true</code> and <code>cap_add: [ALL]</code> in docker-compose give a container
+         unrestricted kernel access. CIS-5.4 and CIS-5.3. Flagged with specific remediation steps.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#128260;</div>
+      <h3>Docker Socket Mounts</h3>
+      <p>Mounting <code>/var/run/docker.sock</code> gives a container full control over the Docker daemon
+         &mdash; equivalent to root on the host. CIS-5.13. Flagged as CRITICAL.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#128100;</div>
+      <h3>Root Container Execution</h3>
+      <p>Containers without a non-root USER instruction run as UID 0. If the application is compromised,
+         the attacker has root inside the container. CIS-4.1.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#127981;</div>
+      <h3>Supply Chain Risks</h3>
+      <p>Base images without digest pinning, using Docker Hub community images, or without Docker Content
+         Trust enabled receive elevated risk scores. CIS-4.2 and CIS-4.5.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#128203;</div>
+      <h3>Multi-Stage Secret Leaks</h3>
+      <p>Secrets set in ENV or ARG in early build stages may survive into the final image layer history.
+         DockerDNA detects this pattern across all stages and warns before the image is built.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#128184;</div>
+      <h3>Missing Resource Limits</h3>
+      <p>Containers without memory or CPU limits can consume all host resources, causing denial of service
+         for other workloads. CIS-5.10 and CIS-5.11.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#128268;</div>
+      <h3>Missing Security Controls</h3>
+      <p>No HEALTHCHECK (CIS-4.6), no read-only root filesystem (CIS-5.12), no no-new-privileges (CIS-5.14),
+         no AppArmor profile (CIS-5.1). All flagged with CIS control IDs and remediations.</p>
+    </div>
+    <div class="security-card">
+      <div class="security-icon">&#128300;</div>
+      <h3>Unnecessary Packages</h3>
+      <p>curl, wget, vim, gcc, gdb, strace, openssh-server, and 10+ other tools that expand the
+         attack surface when present in production images. CIS-4.3.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- COMPARISON TABLE -->
+<section id="compare">
+  <div class="section-label">Comparison</div>
+  <h2>DockerDNA vs existing tools</h2>
+  <p class="section-sub">
+    DockSec, Trivy, and Hadolint cover different areas. DockerDNA fills the gaps none of them address.
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>DockerDNA</th>
+          <th>OWASP DockSec</th>
+          <th>Trivy</th>
+          <th>Hadolint</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dockerfile security scan</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td class="partial">&mdash;</td>
+          <td class="check">&#10003;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>docker-compose.yml scanner</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Secrets detection (regex)</td>
+          <td class="check">&#10003; 20+ patterns</td>
+          <td class="cross">&#10007;</td>
+          <td class="partial">partial</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Shannon entropy analysis</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>CIS Docker Benchmark mapping</td>
+          <td class="check">&#10003; v1.6</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>SBOM generation (CycloneDX)</td>
+          <td class="check">&#10003; 1.5</td>
+          <td class="cross">&#10007;</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>SARIF output</td>
+          <td class="check">&#10003; 2.1.0</td>
+          <td class="cross">&#10007; open issue #45</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Supply chain risk scoring</td>
+          <td class="check">&#10003; 0&ndash;100</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Multi-stage build secret leak</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>CI/CD threshold gate (--threshold)</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007; open issue #46</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr>
+          <td>AI remediation</td>
+          <td class="check">&#10003; Claude</td>
+          <td class="check">&#10003; Multi-LLM</td>
+          <td class="cross">&#10007;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+        <tr>
+          <td>CVE vulnerability database</td>
+          <td class="partial">&mdash;</td>
+          <td class="check">&#10003; via Trivy</td>
+          <td class="check">&#10003;</td>
+          <td class="cross">&#10007;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:1rem;font-size:0.82rem;color:var(--muted);">
+    DockerDNA is designed to <em>complement</em> DockSec and Trivy, not replace them.
+    Run DockerDNA for compose/secrets/compliance/SBOM/SARIF; run Trivy for CVE database scanning.
+  </p>
+</section>
+
+<hr class="section-divider">
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="section-label">Installation</div>
+  <h2>Get started in 30 seconds</h2>
+  <p class="section-sub">Install via pip, point at your Dockerfile or project directory, get results in JSON, HTML, SARIF, and SBOM.</p>
+
+  <div class="install-grid">
+    <div class="install-card">
+      <div class="install-header"><span style="color:#58a6ff">&#9679;</span> 1. Install</div>
+      <div class="install-body">
+        <pre>pip install dockerdna
+
+# With AI remediation
+pip install "dockerdna[ai]"</pre>
+        <div class="install-note">Requires Python 3.11+. PyYAML is the only non-stdlib dependency for core scanning.</div>
+      </div>
+    </div>
+
+    <div class="install-card">
+      <div class="install-header"><span style="color:#3fb950">&#9679;</span> 2. Scan your project</div>
+      <div class="install-body">
+        <pre>dockerdna Dockerfile \
+  --compose docker-compose.yml \
+  --format json html sarif sbom</pre>
+        <div class="install-note">Output written to <code>./dockerdna-results/</code>. HTML report includes an interactive CIS compliance scorecard.</div>
+      </div>
+    </div>
+
+    <div class="install-card">
+      <div class="install-header"><span style="color:#f0883e">&#9679;</span> 3. CI/CD gate</div>
+      <div class="install-body">
+        <pre>dockerdna Dockerfile \
+  --compose docker-compose.yml \
+  --threshold HIGH \
+  --format sarif</pre>
+        <div class="install-note">Exits with code 1 if any CRITICAL or HIGH findings are present. Use in GitHub Actions to block unsafe PRs.</div>
+      </div>
+    </div>
+
+    <div class="install-card">
+      <div class="install-header"><span style="color:#bc8cff">&#9679;</span> 4. AI remediation</div>
+      <div class="install-body">
+        <pre>export ANTHROPIC_API_KEY=sk-...
+dockerdna Dockerfile \
+  --compose docker-compose.yml \
+  --ai --format json html</pre>
+        <div class="install-note">Claude synthesises findings from all five scanners and produces a prioritised fix plan with corrected Dockerfile and compose file.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:2.5rem;margin-bottom:1rem;">GitHub Actions integration</div>
+  <div class="install-card" style="max-width:680px;">
+    <div class="install-header"><span style="color:#2dd4bf">&#9679;</span> .github/workflows/security.yml</div>
+    <div class="install-body">
+      <pre>- uses: actions/checkout@v4
+- run: pip install dockerdna
+
+- name: Run DockerDNA
+  run: |
+    dockerdna Dockerfile \
+      --compose docker-compose.yml \
+      --format sarif json \
+      --threshold HIGH \
+      --output dockerdna-results
+
+- name: Upload to GitHub Security tab
+  uses: github/codeql-action/upload-sarif@v3
+  if: always()
+  with:
+    sarif_file: dockerdna-results/report.sarif</pre>
+      <div class="install-note">SARIF findings appear as inline annotations on pull requests in the GitHub Security tab. No additional configuration required.</div>
+    </div>
+  </div>
+
+  <div class="section-label" style="margin-top:2.5rem;margin-bottom:1rem;">Sample output &mdash; vulnerable example</div>
+  <div class="install-card" style="max-width:680px;">
+    <div class="install-header"><span style="color:#f85149">&#9679;</span> dockerdna Dockerfile.vulnerable --compose docker-compose.vulnerable.yml</div>
+    <div class="install-body">
+      <pre>  Risk Score     : 100/100
+  CIS Compliance : 0.0%
+  Total Findings : 44
+
+  CRITICAL    8
+  HIGH       12
+  MEDIUM     17
+  LOW         7
+
+  [CRITICAL] CIS-4.9  ENV DB_PASSWORD=supersecret123
+  [CRITICAL] CIS-4.9  ENV API_KEY=AIzaSyABCDEFG...
+  [CRITICAL] CIS-4.10 AWS Access Key ID detected
+  [CRITICAL] CIS-5.4  webapp: Privileged mode enabled
+  [CRITICAL] CIS-5.13 webapp: Docker socket mounted
+  [HIGH]     CIS-4.1  No non-root USER instruction
+  [HIGH]     CIS-5.9  webapp: network_mode: host
+  [HIGH]     CIS-5.3  webapp: cap_add: [ALL]</pre>
+      <div class="install-note">Full HTML report with CIS compliance scorecard written to <code>dockerdna-results/report.html</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- STAR HISTORY -->
+<section>
+  <div class="section-label">Community</div>
+  <h2>Star history</h2>
+  <p class="section-sub">Track DockerDNA's growth on GitHub.</p>
+  <a href="https://star-history.com/#sunilgentyala/DockerDNA&Date" target="_blank">
+    <img
+      src="https://api.star-history.com/svg?repos=sunilgentyala/DockerDNA&type=Date"
+      alt="Star History Chart"
+      style="width:100%;max-width:720px;border-radius:10px;border:1px solid var(--border);display:block;"
+    >
+  </a>
+</section>
+
+<!-- STAR CTA -->
+<div class="star-cta">
+  <h2>Fill the container security gap &#11088;</h2>
+  <p>A star helps DevSecOps engineers, Docker security researchers, and platform teams
+     find this work. If DockerDNA caught something in your stack that DockSec missed, open an issue.</p>
+  <div class="star-cta-actions">
+    <a href="https://github.com/sunilgentyala/DockerDNA" class="btn btn-primary" target="_blank">
+      &#9733;&nbsp; Star on GitHub
+    </a>
+    <a href="https://github.com/sunilgentyala/DockerDNA/issues" class="btn btn-outline" target="_blank">
+      Open an issue
+    </a>
+    <a href="https://github.com/sunilgentyala/DockerDNA/blob/main/README.md" class="btn btn-outline" target="_blank">
+      Read the docs
+    </a>
+  </div>
+</div>
+
+<!-- AUTHOR -->
+<section>
+  <div class="section-label">Author</div>
+  <h2>Built by</h2>
+  <div class="author-card">
+    <div class="author-avatar">SG</div>
+    <div>
+      <div class="author-name">Sunil Gentyala, Independent Researcher</div>
+      <div class="author-role">
+        IEEE Member &nbsp;&middot;&nbsp; Security Researcher<br>
+        sunil.gentyala@ieee.org
+      </div>
+      <div class="author-links">
+        <a href="https://github.com/sunilgentyala" class="author-link" target="_blank">GitHub</a>
+        <a href="https://sunilgentyala.github.io/ZKP-RA/" class="author-link" target="_blank">ZKP-RA</a>
+        <a href="https://sunilgentyala.github.io/argus/" class="author-link" target="_blank">ARGUS</a>
+        <a href="https://sunilgentyala.github.io/OmniRed/" class="author-link" target="_blank">OmniRed</a>
+        <a href="mailto:sunil.gentyala@ieee.org" class="author-link">IEEE Email</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>
+    DockerDNA &copy; 2026 <a href="https://github.com/sunilgentyala" target="_blank">Sunil Gentyala, Independent Researcher</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/sunilgentyala/DockerDNA/blob/main/LICENSE" target="_blank">MIT License</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/sunilgentyala/DockerDNA" target="_blank">GitHub Repository</a>
+  </p>
+  <p style="margin-top:0.4rem;">
+    CIS Docker Benchmark is a trademark of the Center for Internet Security.
+    DockerDNA is an independent open-source project.
+  </p>
+</footer>
+
+</body>
+</html>
