@@ -231,6 +231,6 @@ MIT License. See [LICENSE](LICENSE).
 ## Author
 
 **Sunil Gentyala, Independent Researcher**
-IEEE Member | Security Researcher
+IEEE senior Member | Security Researcher
 - IEEE: sunil.gentyala@ieee.org
 - GitHub: [@sunilgentyala](https://github.com/sunilgentyala)
