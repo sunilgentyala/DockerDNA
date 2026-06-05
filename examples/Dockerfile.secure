@@ -1,0 +1,27 @@
+# Example: Hardened Dockerfile following CIS Docker Benchmark v1.6
+# This demonstrates what DockerDNA expects to see
+
+FROM python:3.12-slim@sha256:4ade1a4d76f4b9c3f4c2c3b4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4
+
+# Install only what is needed in a single cached layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ .
+
+# CIS-4.1: Non-root user
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+USER appuser
+
+# CIS-4.6: Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"
+
+EXPOSE 8080
+CMD ["python", "app.py"]

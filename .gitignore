@@ -1,0 +1,28 @@
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.env
+.env.local
+
+# Test artifacts
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# DockerDNA output
+dockerdna-results/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

@@ -1,0 +1,25 @@
+# Example: Deliberately vulnerable Dockerfile for testing DockerDNA
+# DO NOT use this in production!
+
+FROM ubuntu:latest
+
+# CIS-4.9: Secret in ENV
+ENV DB_PASSWORD=supersecret123
+ENV API_KEY=AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ123456
+
+# CIS-4.7: apt-get update without install in same layer
+RUN apt-get update
+
+# CIS-4.3: Unnecessary packages
+RUN apt-get install -y curl wget vim nano openssh-server gcc make
+
+# CIS-5.6: SSH server
+RUN service ssh start
+
+# Hardcoded AWS key
+RUN echo "aws_access_key_id=AKIAIOSFODNN7EXAMPLE" >> /root/.aws/credentials
+
+# Missing HEALTHCHECK
+# Missing USER instruction (runs as root)
+
+CMD ["/bin/bash"]

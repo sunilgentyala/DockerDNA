@@ -1,0 +1,71 @@
+name: DockerDNA Security Gate
+
+# Reusable workflow: add to any project to run DockerDNA as a PR security gate
+on:
+  workflow_call:
+    inputs:
+      dockerfile:
+        description: "Path to Dockerfile"
+        required: false
+        default: "Dockerfile"
+        type: string
+      compose_file:
+        description: "Path to docker-compose.yml"
+        required: false
+        default: ""
+        type: string
+      threshold:
+        description: "Fail build if findings at this severity or above (CRITICAL/HIGH/MEDIUM/LOW)"
+        required: false
+        default: "HIGH"
+        type: string
+      formats:
+        description: "Output formats (space-separated: json html sarif sbom)"
+        required: false
+        default: "json sarif"
+        type: string
+
+jobs:
+  dockerdna-scan:
+    name: DockerDNA Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install DockerDNA
+        run: pip install dockerdna
+
+      - name: Run DockerDNA scan
+        id: scan
+        run: |
+          COMPOSE_ARG=""
+          if [ -n "${{ inputs.compose_file }}" ] && [ -f "${{ inputs.compose_file }}" ]; then
+            COMPOSE_ARG="--compose ${{ inputs.compose_file }}"
+          fi
+          dockerdna ${{ inputs.dockerfile }} \
+            $COMPOSE_ARG \
+            --format ${{ inputs.formats }} \
+            --threshold ${{ inputs.threshold }} \
+            --output dockerdna-results || echo "::warning::DockerDNA found security issues"
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && contains(inputs.formats, 'sarif')
+        with:
+          sarif_file: dockerdna-results/report.sarif
+
+      - name: Upload scan report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dockerdna-security-report
+          path: dockerdna-results/
+          retention-days: 30

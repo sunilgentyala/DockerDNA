@@ -1,0 +1,28 @@
+# Example: Deliberately misconfigured docker-compose for testing DockerDNA
+# DO NOT use in production!
+
+version: "3.9"
+
+services:
+  webapp:
+    image: myapp:latest
+    privileged: true
+    network_mode: host
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc:/host-etc:ro
+    environment:
+      - DB_PASSWORD=hardcoded_secret_123
+      - API_SECRET=sk_live_verysecretkey12345678
+      - NODE_ENV=production
+    cap_add:
+      - ALL
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: plaintext_db_pass
+      POSTGRES_USER: admin
