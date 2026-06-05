@@ -9,7 +9,7 @@ description = "Layer-by-Layer Container Security DNA Analysis — secrets detect
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
-    { name = "Sunil Gentyala", email = "sunil.gentyala@ieee.org" }
+    { name = "Sunil Gentyala, Independent Researcher", email = "sunil.gentyala@ieee.org" }
 ]
 keywords = [
     "docker", "container", "security", "devops", "devsecops",

@@ -230,7 +230,7 @@ MIT License. See [LICENSE](LICENSE).
 
 ## Author
 
-**Sunil Gentyala**
-IEEE Member | Security Researcher | HCLTECH
+**Sunil Gentyala, Independent Researcher**
+IEEE Member | Security Researcher
 - IEEE: sunil.gentyala@ieee.org
 - GitHub: [@sunilgentyala](https://github.com/sunilgentyala)
