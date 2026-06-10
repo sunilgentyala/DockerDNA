@@ -27,20 +27,16 @@ jobs:
       - name: Setup GitHub Pages Environment Node
         uses: actions/configure-pages@v4
 
+      # Clean out backend environments so the static packager cannot get stuck
+      - name: Purge Heavy Python Workspaces
+        run: |
+          rm -rf dockerdna/ tests/ examples/ docs/ .github/
+          rm -f pyproject.toml LICENSE README.md .gitignore
+
       - name: Upload Static Web Production Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-          # Explicitly exclude local python runtimes and cache configurations
-          exclude: |
-            .git
-            .github
-            dockerdna/
-            tests/
-            examples/
-            .venv/
-            __pycache__/
-            *.pyc
 
       - name: Deploy to GitHub Pages Edge
         id: deployment
