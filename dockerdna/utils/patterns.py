@@ -2,11 +2,9 @@
 Secret patterns, CIS Docker Benchmark rules, and detection utilities.
 """
 
-import re
 import math
 import string
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 # ---------------------------------------------------------------------------
 # Secret patterns (format: name, regex, severity, cis_id)

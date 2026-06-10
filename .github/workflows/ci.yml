@@ -52,6 +52,9 @@ jobs:
   self-scan:
     name: DockerDNA Self-Scan (examples)
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -69,7 +72,7 @@ jobs:
             --output dockerdna-results-vulnerable
 
       - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: dockerdna-results-vulnerable/report.sarif

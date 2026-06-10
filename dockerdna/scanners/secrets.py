@@ -14,16 +14,15 @@ Uses two complementary strategies:
 Neither strategy is used by DockSec, Trivy, or Hadolint.
 """
 
-import re
 import os
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
 from dockerdna.utils.patterns import (
     SECRET_PATTERNS,
     is_high_entropy_secret,
-    ENTROPY_THRESHOLD,
 )
 
 

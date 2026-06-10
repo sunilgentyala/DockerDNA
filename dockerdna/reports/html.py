@@ -5,7 +5,6 @@ from __future__ import annotations
 import html as html_lib
 from typing import Any
 
-
 _SEVERITY_COLORS = {
     "CRITICAL": "#dc2626",
     "HIGH":     "#ea580c",

@@ -11,9 +11,8 @@ Goes beyond Hadolint by adding:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from dockerdna.utils.patterns import (
     CIS_RULE_MAP,
@@ -127,9 +126,11 @@ class DockerfileScanner:
     def _audit(self, layers: list[Layer]) -> list[DockerfileFinding]:
         findings: list[DockerfileFinding] = []
 
-        has_user = any(l.instruction == "USER" and l.arguments.strip() not in ("root", "0")
-                       for l in layers)
-        has_healthcheck = any(l.instruction == "HEALTHCHECK" for l in layers)
+        has_user = any(
+            layer_.instruction == "USER" and layer_.arguments.strip() not in ("root", "0")
+            for layer_ in layers
+        )
+        has_healthcheck = any(layer_.instruction == "HEALTHCHECK" for layer_ in layers)
         stages_with_from: dict[str, list[str]] = {}
 
         for layer in layers:
@@ -217,7 +218,7 @@ class DockerfileScanner:
                     secret_names.append((layer, match.group(1)))
 
         # If we find secrets, check whether a final FROM stage clears them
-        stage_names = [l.stage for l in layers if l.instruction == "FROM"]
+        stage_names = [layer_.stage for layer_ in layers if layer_.instruction == "FROM"]
         if secret_names and len(set(stage_names)) > 1:
             for layer, name in secret_names:
                 findings.append(DockerfileFinding(

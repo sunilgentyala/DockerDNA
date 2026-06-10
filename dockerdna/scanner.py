@@ -7,20 +7,19 @@ Runs all sub-scanners and assembles a unified report.
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 from typing import Optional
 
-from dockerdna.scanners.secrets       import SecretsScanner
-from dockerdna.scanners.compose       import ComposeScanner
-from dockerdna.scanners.dockerfile    import DockerfileScanner
-from dockerdna.scanners.supply_chain  import SupplyChainScanner
-from dockerdna.scanners.compliance    import ComplianceMapper
-from dockerdna.reports.sarif          import generate_sarif
-from dockerdna.reports.sbom           import extract_components, generate_cyclonedx
-from dockerdna.reports.json_report    import generate_json_report
-from dockerdna.reports.html           import generate_html
+from dockerdna.reports.html import generate_html
+from dockerdna.reports.json_report import generate_json_report
+from dockerdna.reports.sarif import generate_sarif
+from dockerdna.reports.sbom import extract_components, generate_cyclonedx
+from dockerdna.scanners.compliance import ComplianceMapper
+from dockerdna.scanners.compose import ComposeScanner
+from dockerdna.scanners.dockerfile import DockerfileScanner
+from dockerdna.scanners.secrets import SecretsScanner
+from dockerdna.scanners.supply_chain import SupplyChainScanner
 
 
 def scan(
