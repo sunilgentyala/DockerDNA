@@ -57,7 +57,7 @@ jobs:
             --output dockerdna-results || echo "::warning::DockerDNA found security issues"
 
       - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always() && contains(inputs.formats, 'sarif')
         with:
           sarif_file: dockerdna-results/report.sarif
