@@ -24,22 +24,20 @@ jobs:
       - name: Checkout Source Tree
         uses: actions/checkout@v4
 
-     # Clean out backend environments dynamically to minimize the bundle surface
-      # Clean out backend environments safely without touching system workflow files
-      - name: Purge Heavy Python Workspaces
+      - name: Setup GitHub Pages Environment Node
+        uses: actions/configure-pages@v4
+
+      # We isolate the builder by copying ONLY index.html into a fresh, empty deployment target folder
+      - name: Stage Web Production Artifact
         run: |
-          rm -rf dockerdna/ tests/ examples/ docs/
-          rm -f pyproject.toml LICENSE README.md
-          rm -rf .github/
-          rm -f .gitignore
-        run: |
-          rm -rf dockerdna/ tests/ examples/ docs/ .github/
-          rm -f pyproject.toml LICENSE README.md .gitignore
+          mkdir public
+          cp index.html public/
 
       - name: Upload Static Web Production Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          # Target only the clean public folder containing your standalone page
+          path: 'public'
 
       - name: Deploy to GitHub Pages Edge
         id: deployment
