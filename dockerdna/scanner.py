@@ -31,7 +31,7 @@ def scan(
     ai_model: str = "claude-sonnet-4-6",
     output_dir: str = "dockerdna-results",
     formats: list[str] | None = None,
-    threshold: Optional[str] = None,   # CRITICAL | HIGH | MEDIUM | LOW
+    threshold: Optional[str] = None,  # CRITICAL | HIGH | MEDIUM | LOW
     redact_secrets: bool = True,
     verbose: bool = False,
 ) -> dict:
@@ -61,8 +61,12 @@ def scan(
                 break
 
     if compose_file is None and scan_directory:
-        for candidate in ["docker-compose.yml", "docker-compose.yaml",
-                           "compose.yml", "compose.yaml"]:
+        for candidate in [
+            "docker-compose.yml",
+            "docker-compose.yaml",
+            "compose.yml",
+            "compose.yaml",
+        ]:
             p = Path(scan_directory) / candidate
             if p.exists():
                 compose_file = str(p)
@@ -71,11 +75,11 @@ def scan(
     # ------------------------------------------------------------------ #
     # Run scanners
     # ------------------------------------------------------------------ #
-    secrets_scanner   = SecretsScanner(redact=redact_secrets)
-    compose_scanner   = ComposeScanner()
+    secrets_scanner = SecretsScanner(redact=redact_secrets)
+    compose_scanner = ComposeScanner()
     dockerfile_scanner = DockerfileScanner()
     supply_chain_scanner = SupplyChainScanner()
-    compliance_mapper  = ComplianceMapper()
+    compliance_mapper = ComplianceMapper()
 
     # Secrets
     secret_findings = []
@@ -115,15 +119,16 @@ def scan(
 
     # Compliance
     compliance_report = compliance_mapper.generate(
-        dockerfile_findings, compose_findings,
-        secret_findings, supply_chain_findings,
+        dockerfile_findings,
+        compose_findings,
+        secret_findings,
+        supply_chain_findings,
     )
 
     # SBOM
-    components  = extract_components(layers)
-    image_name  = Path(dockerfile).stem if dockerfile else "unknown"
-    sbom        = generate_cyclonedx(components, image_name,
-                                      dockerfile or "Dockerfile")
+    components = extract_components(layers)
+    image_name = Path(dockerfile).stem if dockerfile else "unknown"
+    sbom = generate_cyclonedx(components, image_name, dockerfile or "Dockerfile")
 
     # Metadata
     metadata = {
@@ -141,9 +146,13 @@ def scan(
     # Assemble report
     # ------------------------------------------------------------------ #
     report = generate_json_report(
-        dockerfile_findings, compose_findings,
-        secret_findings, supply_chain_findings,
-        compliance_report, sbom, metadata,
+        dockerfile_findings,
+        compose_findings,
+        secret_findings,
+        supply_chain_findings,
+        compliance_report,
+        sbom,
+        metadata,
     )
 
     # ------------------------------------------------------------------ #
@@ -151,10 +160,14 @@ def scan(
     # ------------------------------------------------------------------ #
     if ai_remediation:
         from dockerdna.ai.remediation import get_ai_remediation
+
         ai_result = get_ai_remediation(
-            dockerfile, compose_file,
-            dockerfile_findings, compose_findings,
-            secret_findings, supply_chain_findings,
+            dockerfile,
+            compose_file,
+            dockerfile_findings,
+            compose_findings,
+            secret_findings,
+            supply_chain_findings,
             compliance_report.score,
             model=ai_model,
         )
@@ -168,7 +181,9 @@ def scan(
 
     if "json" in formats:
         json_path = out / "report.json"
-        json_path.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
+        json_path.write_text(
+            json.dumps(report, indent=2, default=str), encoding="utf-8"
+        )
         if verbose:
             print(f"[DockerDNA] JSON report: {json_path}")
 
@@ -180,8 +195,10 @@ def scan(
 
     if "sarif" in formats:
         sarif_data = generate_sarif(
-            dockerfile_findings, compose_findings,
-            secret_findings, supply_chain_findings,
+            dockerfile_findings,
+            compose_findings,
+            secret_findings,
+            supply_chain_findings,
             base_path=str(Path(dockerfile).parent) if dockerfile else "",
         )
         sarif_path = out / "report.sarif"

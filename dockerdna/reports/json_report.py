@@ -31,9 +31,7 @@ def generate_json_report(
     total_critical = sum(
         c["CRITICAL"] for c in [df_counts, cf_counts, sf_counts, sc_counts]
     )
-    total_high = sum(
-        c["HIGH"] for c in [df_counts, cf_counts, sf_counts, sc_counts]
-    )
+    total_high = sum(c["HIGH"] for c in [df_counts, cf_counts, sf_counts, sc_counts])
 
     risk_score = min(100, total_critical * 15 + total_high * 5)
 
@@ -54,8 +52,12 @@ def generate_json_report(
             "by_severity": {
                 "CRITICAL": total_critical,
                 "HIGH": total_high,
-                "MEDIUM": sum(c["MEDIUM"] for c in [df_counts, cf_counts, sf_counts, sc_counts]),
-                "LOW": sum(c["LOW"] for c in [df_counts, cf_counts, sf_counts, sc_counts]),
+                "MEDIUM": sum(
+                    c["MEDIUM"] for c in [df_counts, cf_counts, sf_counts, sc_counts]
+                ),
+                "LOW": sum(
+                    c["LOW"] for c in [df_counts, cf_counts, sf_counts, sc_counts]
+                ),
             },
         },
         "findings": {

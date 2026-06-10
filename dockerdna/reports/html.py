@@ -7,14 +7,14 @@ from typing import Any
 
 _SEVERITY_COLORS = {
     "CRITICAL": "#dc2626",
-    "HIGH":     "#ea580c",
-    "MEDIUM":   "#d97706",
-    "LOW":      "#65a30d",
+    "HIGH": "#ea580c",
+    "MEDIUM": "#d97706",
+    "LOW": "#65a30d",
 }
 
 _STATUS_COLORS = {
-    "PASS":        "#16a34a",
-    "FAIL":        "#dc2626",
+    "PASS": "#16a34a",
+    "FAIL": "#dc2626",
     "NOT_CHECKED": "#6b7280",
 }
 
@@ -28,7 +28,7 @@ def _badge(severity: str) -> str:
     return (
         f'<span style="background:{color};color:#fff;padding:2px 8px;'
         f'border-radius:4px;font-size:0.75rem;font-weight:bold;">'
-        f'{_esc(severity)}</span>'
+        f"{_esc(severity)}</span>"
     )
 
 
@@ -37,7 +37,7 @@ def _status_badge(status: str) -> str:
     return (
         f'<span style="background:{color};color:#fff;padding:2px 8px;'
         f'border-radius:4px;font-size:0.75rem;font-weight:bold;">'
-        f'{_esc(status)}</span>'
+        f"{_esc(status)}</span>"
     )
 
 
@@ -52,7 +52,7 @@ def _finding_rows(findings: list[Any], cols: list[tuple[str, str]]) -> str:
             if kind == "badge":
                 cells.append(f"<td>{_badge(str(val))}</td>")
             elif kind == "code":
-                cells.append(f'<td><code>{_esc(val)}</code></td>')
+                cells.append(f"<td><code>{_esc(val)}</code></td>")
             else:
                 cells.append(f"<td>{_esc(val)}</td>")
         rows.append(f"<tr>{''.join(cells)}</tr>")
@@ -61,16 +61,15 @@ def _finding_rows(findings: list[Any], cols: list[tuple[str, str]]) -> str:
 
 def generate_html(report: dict) -> str:
     summary = report.get("summary", {})
-    risk     = summary.get("risk_score", 0)
-    comp     = summary.get("compliance_score", 0)
-    total    = summary.get("total_findings", 0)
-    by_sev   = summary.get("by_severity", {})
+    risk = summary.get("risk_score", 0)
+    comp = summary.get("compliance_score", 0)
+    total = summary.get("total_findings", 0)
+    by_sev = summary.get("by_severity", {})
 
     risk_color = (
-        "#dc2626" if risk >= 70 else
-        "#ea580c" if risk >= 40 else
-        "#d97706" if risk >= 20 else
-        "#16a34a"
+        "#dc2626"
+        if risk >= 70
+        else "#ea580c" if risk >= 40 else "#d97706" if risk >= 20 else "#16a34a"
     )
 
     meta = report.get("metadata", {})
@@ -79,7 +78,9 @@ def generate_html(report: dict) -> str:
     # Findings tables
     # ------------------------------------------------------------------ #
 
-    def _table(title: str, findings: list[dict], columns: list[tuple[str, str, str]]) -> str:
+    def _table(
+        title: str, findings: list[dict], columns: list[tuple[str, str, str]]
+    ) -> str:
         headers = "".join(f"<th>{h}</th>" for h, _, _ in columns)
         rows_html = ""
         if not findings:
@@ -92,7 +93,9 @@ def generate_html(report: dict) -> str:
                     if kind == "badge":
                         cells.append(f"<td>{_badge(str(val))}</td>")
                     elif kind == "code":
-                        cells.append(f'<td><code style="font-size:0.8rem;">{_esc(val)}</code></td>')
+                        cells.append(
+                            f'<td><code style="font-size:0.8rem;">{_esc(val)}</code></td>'
+                        )
                     else:
                         cells.append(f"<td>{_esc(val)}</td>")
                 rows_html += f"<tr>{''.join(cells)}</tr>\n"
@@ -106,49 +109,65 @@ def generate_html(report: dict) -> str:
         </table>
         </div>"""
 
-    df_findings  = report.get("findings", {}).get("dockerfile", [])
-    cf_findings  = report.get("findings", {}).get("compose", [])
+    df_findings = report.get("findings", {}).get("dockerfile", [])
+    cf_findings = report.get("findings", {}).get("compose", [])
     sec_findings = report.get("findings", {}).get("secrets", [])
-    sc_findings  = report.get("findings", {}).get("supply_chain", [])
+    sc_findings = report.get("findings", {}).get("supply_chain", [])
 
-    df_table = _table("Dockerfile Findings", df_findings, [
-        ("Severity",    "severity",    "badge"),
-        ("Line",        "line",        "text"),
-        ("CIS ID",      "cis_id",      "code"),
-        ("Title",       "title",       "text"),
-        ("Detail",      "detail",      "text"),
-        ("Stage",       "stage",       "text"),
-    ])
+    df_table = _table(
+        "Dockerfile Findings",
+        df_findings,
+        [
+            ("Severity", "severity", "badge"),
+            ("Line", "line", "text"),
+            ("CIS ID", "cis_id", "code"),
+            ("Title", "title", "text"),
+            ("Detail", "detail", "text"),
+            ("Stage", "stage", "text"),
+        ],
+    )
 
-    cf_table = _table("docker-compose.yml Findings", cf_findings, [
-        ("Severity",  "severity", "badge"),
-        ("Service",   "service",  "text"),
-        ("CIS ID",    "cis_id",   "code"),
-        ("Title",     "title",    "text"),
-        ("Detail",    "detail",   "text"),
-    ])
+    cf_table = _table(
+        "docker-compose.yml Findings",
+        cf_findings,
+        [
+            ("Severity", "severity", "badge"),
+            ("Service", "service", "text"),
+            ("CIS ID", "cis_id", "code"),
+            ("Title", "title", "text"),
+            ("Detail", "detail", "text"),
+        ],
+    )
 
-    sec_table = _table("Secrets Detected", sec_findings, [
-        ("Severity",    "severity",         "badge"),
-        ("File",        "file",             "text"),
-        ("Line",        "line",             "text"),
-        ("CIS ID",      "cis_id",           "code"),
-        ("Type",        "type",             "text"),
-        ("Method",      "detection",        "text"),
-        ("Value",       "matched_value",    "code"),
-    ])
+    sec_table = _table(
+        "Secrets Detected",
+        sec_findings,
+        [
+            ("Severity", "severity", "badge"),
+            ("File", "file", "text"),
+            ("Line", "line", "text"),
+            ("CIS ID", "cis_id", "code"),
+            ("Type", "type", "text"),
+            ("Method", "detection", "text"),
+            ("Value", "matched_value", "code"),
+        ],
+    )
 
-    sc_table = _table("Supply Chain Analysis", sc_findings, [
-        ("Severity",     "severity",    "badge"),
-        ("Image",        "image",       "code"),
-        ("Stage",        "stage",       "text"),
-        ("Risk Score",   "risk_score",  "text"),
-        ("Factors",      "factors",     "text"),
-    ])
+    sc_table = _table(
+        "Supply Chain Analysis",
+        sc_findings,
+        [
+            ("Severity", "severity", "badge"),
+            ("Image", "image", "code"),
+            ("Stage", "stage", "text"),
+            ("Risk Score", "risk_score", "text"),
+            ("Factors", "factors", "text"),
+        ],
+    )
 
     # Compliance table
     compliance = report.get("compliance", {})
-    c_summary  = compliance.get("summary", {})
+    c_summary = compliance.get("summary", {})
     c_controls = compliance.get("controls", [])
     c_rows = ""
     for ctrl in c_controls:

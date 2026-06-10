@@ -31,16 +31,12 @@ def _build_context(
     if dockerfile_findings:
         parts.append("=== Dockerfile Findings ===")
         for f in dockerfile_findings:
-            parts.append(
-                f"[{f.severity}] {f.cis_id} line {f.line_number}: {f.detail}"
-            )
+            parts.append(f"[{f.severity}] {f.cis_id} line {f.line_number}: {f.detail}")
 
     if compose_findings:
         parts.append("\n=== docker-compose.yml Findings ===")
         for f in compose_findings:
-            parts.append(
-                f"[{f.severity}] {f.cis_id} service '{f.service}': {f.detail}"
-            )
+            parts.append(f"[{f.severity}] {f.cis_id} service '{f.service}': {f.detail}")
 
     if secret_findings:
         parts.append("\n=== Secrets Detected ===")
@@ -100,9 +96,12 @@ def get_ai_remediation(
         return {"error": "ANTHROPIC_API_KEY environment variable not set"}
 
     context = _build_context(
-        dockerfile_path, compose_path,
-        dockerfile_findings, compose_findings,
-        secret_findings, supply_chain_findings,
+        dockerfile_path,
+        compose_path,
+        dockerfile_findings,
+        compose_findings,
+        secret_findings,
+        supply_chain_findings,
         compliance_score,
     )
 

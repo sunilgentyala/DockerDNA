@@ -20,8 +20,8 @@ from dockerdna.scanner import scan
 
 def _print_summary(report: dict) -> None:
     summary = report.get("summary", {})
-    by_sev  = summary.get("by_severity", {})
-    meta    = report.get("metadata", {})
+    by_sev = summary.get("by_severity", {})
+    meta = report.get("metadata", {})
     print()
     print("  ____             _             ____  _   _    _")
     print(" |  _ \\  ___   ___| | _____ _ __| __ )| \\ | |  / \\")
@@ -54,17 +54,16 @@ def _print_summary(report: dict) -> None:
         + findings.get("supply_chain", [])
     )
     critical_high = [
-        f for f in all_findings
-        if f.get("severity") in ("CRITICAL", "HIGH")
+        f for f in all_findings if f.get("severity") in ("CRITICAL", "HIGH")
     ]
     if critical_high:
         print("  Top findings requiring immediate attention:")
         for f in critical_high[:10]:
-            sev  = f.get("severity", "")
-            cis  = f.get("cis_id", "")
-            msg  = f.get("detail") or f.get("description") or str(f.get("factors", ""))
-            svc  = f.get("service", "") or f.get("file", "")
-            loc  = f" [{svc}]" if svc else ""
+            sev = f.get("severity", "")
+            cis = f.get("cis_id", "")
+            msg = f.get("detail") or f.get("description") or str(f.get("factors", ""))
+            svc = f.get("service", "") or f.get("file", "")
+            loc = f" [{svc}]" if svc else ""
             print(f"  [{sev}] {cis}{loc}: {msg[:90]}")
         if len(critical_high) > 10:
             print(f"  ... and {len(critical_high) - 10} more (see report)")
@@ -82,17 +81,20 @@ def main() -> None:
         help="Path to Dockerfile (optional if --dir is used)",
     )
     parser.add_argument(
-        "--compose", "-c",
+        "--compose",
+        "-c",
         metavar="FILE",
         help="Path to docker-compose.yml",
     )
     parser.add_argument(
-        "--dir", "-d",
+        "--dir",
+        "-d",
         metavar="DIRECTORY",
         help="Scan an entire project directory",
     )
     parser.add_argument(
-        "--file", "-f",
+        "--file",
+        "-f",
         metavar="FILE",
         action="append",
         dest="extra_files",
@@ -107,7 +109,8 @@ def main() -> None:
         help="Output formats: json html sarif sbom (default: json html)",
     )
     parser.add_argument(
-        "--output", "-o",
+        "--output",
+        "-o",
         default="dockerdna-results",
         metavar="DIR",
         help="Output directory (default: ./dockerdna-results)",
@@ -135,7 +138,8 @@ def main() -> None:
         help="Do not redact secret values in reports (use with caution)",
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Print verbose output",
     )

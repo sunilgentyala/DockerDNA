@@ -23,7 +23,7 @@ from dockerdna.utils.patterns import (
 @dataclass
 class Layer:
     index: int
-    instruction: str   # FROM, RUN, COPY, ADD, ENV, ARG, USER, ...
+    instruction: str  # FROM, RUN, COPY, ADD, ENV, ARG, USER, ...
     arguments: str
     line_number: int
     stage: str = "default"
@@ -108,13 +108,15 @@ class DockerfileScanner:
                     stage_counter += 1
                     current_stage = f"stage-{stage_counter}"
 
-            layers.append(Layer(
-                index=layer_index,
-                instruction=instruction,
-                arguments=arguments,
-                line_number=lineno,
-                stage=current_stage,
-            ))
+            layers.append(
+                Layer(
+                    index=layer_index,
+                    instruction=instruction,
+                    arguments=arguments,
+                    line_number=lineno,
+                    stage=current_stage,
+                )
+            )
             layer_index += 1
 
         return layers
@@ -127,7 +129,8 @@ class DockerfileScanner:
         findings: list[DockerfileFinding] = []
 
         has_user = any(
-            layer_.instruction == "USER" and layer_.arguments.strip() not in ("root", "0")
+            layer_.instruction == "USER"
+            and layer_.arguments.strip() not in ("root", "0")
             for layer_ in layers
         )
         has_healthcheck = any(layer_.instruction == "HEALTHCHECK" for layer_ in layers)
@@ -135,13 +138,20 @@ class DockerfileScanner:
 
         for layer in layers:
             instr = layer.instruction
-            args  = layer.arguments
+            args = layer.arguments
 
             # CIS-4.2 — latest tag
-            if instr == "FROM" and (":latest" in args.lower() or "@" not in args and ":" not in args):
+            if instr == "FROM" and (
+                ":latest" in args.lower() or "@" not in args and ":" not in args
+            ):
                 if "scratch" not in args.lower():
-                    findings.append(self._finding(layer, "latest_tag",
-                        f"Base image '{args}' uses :latest or no tag"))
+                    findings.append(
+                        self._finding(
+                            layer,
+                            "latest_tag",
+                            f"Base image '{args}' uses :latest or no tag",
+                        )
+                    )
 
             # Track FROM images per stage
             if instr == "FROM":
@@ -150,22 +160,38 @@ class DockerfileScanner:
 
             # CIS-4.7 — update without install in same RUN
             if instr == "RUN":
-                if re.search(r"\bapt-get\s+update\b", args) and \
-                   not re.search(r"\bapt-get\s+install\b", args):
-                    findings.append(self._finding(layer, "update_without_install",
-                        "apt-get update without apt-get install in same RUN layer"))
+                if re.search(r"\bapt-get\s+update\b", args) and not re.search(
+                    r"\bapt-get\s+install\b", args
+                ):
+                    findings.append(
+                        self._finding(
+                            layer,
+                            "update_without_install",
+                            "apt-get update without apt-get install in same RUN layer",
+                        )
+                    )
 
             # CIS-4.3 — unnecessary packages
             if instr == "RUN":
                 for pkg in UNNECESSARY_PACKAGES:
                     if re.search(r"\b" + re.escape(pkg) + r"\b", args):
-                        findings.append(self._finding(layer, "unnecessary_packages",
-                            f"Unnecessary package installed: {pkg}"))
+                        findings.append(
+                            self._finding(
+                                layer,
+                                "unnecessary_packages",
+                                f"Unnecessary package installed: {pkg}",
+                            )
+                        )
 
             # CIS-5.6 — SSH server in container
             if instr == "RUN" and re.search(r"\bopenssh-server\b|\bsshd\b", args):
-                findings.append(self._finding(layer, "ssh_in_container",
-                    "SSH server installed inside container"))
+                findings.append(
+                    self._finding(
+                        layer,
+                        "ssh_in_container",
+                        "SSH server installed inside container",
+                    )
+                )
 
             # CIS-4.9 — secrets in ENV
             if instr in ("ENV", "ARG"):
@@ -173,37 +199,62 @@ class DockerfileScanner:
                     r"(?i)(password|secret|api_key|token|private_key|access_key)\s*[=:]?\s*\S+",
                     args,
                 ):
-                    findings.append(self._finding(layer, "env_secret",
-                        f"{instr} instruction may contain sensitive data: {args[:60]}"))
+                    findings.append(
+                        self._finding(
+                            layer,
+                            "env_secret",
+                            f"{instr} instruction may contain sensitive data: {args[:60]}",
+                        )
+                    )
 
             # Privilege escalation: sudo install
             if instr == "RUN" and re.search(r"\bsudo\b", args):
-                findings.append(self._finding(layer, "excess_capabilities",
-                    "sudo installed or used — consider dropping all capabilities"))
+                findings.append(
+                    self._finding(
+                        layer,
+                        "excess_capabilities",
+                        "sudo installed or used — consider dropping all capabilities",
+                    )
+                )
 
             # ADD vs COPY (ADD can fetch remote URLs, expanding attack surface)
             if instr == "ADD":
                 if re.search(r"https?://", args):
-                    findings.append(self._finding(layer, "sensitive_mount",
-                        "ADD used with a URL — use RUN curl/wget with checksum verification"))
+                    findings.append(
+                        self._finding(
+                            layer,
+                            "sensitive_mount",
+                            "ADD used with a URL — use RUN curl/wget with checksum verification",
+                        )
+                    )
 
         # File-level findings (not per-layer)
         if not has_user:
             if layers:
-                findings.append(self._finding(layers[-1], "no_user",
-                    "No non-root USER instruction found — container will run as root"))
+                findings.append(
+                    self._finding(
+                        layers[-1],
+                        "no_user",
+                        "No non-root USER instruction found — container will run as root",
+                    )
+                )
 
         if not has_healthcheck:
             if layers:
-                findings.append(self._finding(layers[-1], "no_healthcheck",
-                    "No HEALTHCHECK instruction found"))
+                findings.append(
+                    self._finding(
+                        layers[-1], "no_healthcheck", "No HEALTHCHECK instruction found"
+                    )
+                )
 
         # Multi-stage secret leak detection
         findings.extend(self._check_secret_leak_between_stages(layers))
 
         return findings
 
-    def _check_secret_leak_between_stages(self, layers: list[Layer]) -> list[DockerfileFinding]:
+    def _check_secret_leak_between_stages(
+        self, layers: list[Layer]
+    ) -> list[DockerfileFinding]:
         """Warn when a secret-bearing ENV/ARG in an early stage has no matching
         --build-arg override or secret mount in later stages (best-effort)."""
         findings: list[DockerfileFinding] = []
@@ -218,27 +269,31 @@ class DockerfileScanner:
                     secret_names.append((layer, match.group(1)))
 
         # If we find secrets, check whether a final FROM stage clears them
-        stage_names = [layer_.stage for layer_ in layers if layer_.instruction == "FROM"]
+        stage_names = [
+            layer_.stage for layer_ in layers if layer_.instruction == "FROM"
+        ]
         if secret_names and len(set(stage_names)) > 1:
             for layer, name in secret_names:
-                findings.append(DockerfileFinding(
-                    line_number=layer.line_number,
-                    instruction=layer.instruction,
-                    check_key="env_secret",
-                    cis_id="CIS-4.9",
-                    title="Potential secret leak across multi-stage build",
-                    severity="HIGH",
-                    detail=(
-                        f"'{name}' is set in stage '{layer.stage}'. "
-                        "If it is COPY-ed or inherited, it may persist into the final image."
-                    ),
-                    layer_index=layer.index,
-                    stage=layer.stage,
-                    remediation=(
-                        "Use `RUN --mount=type=secret` (BuildKit) to inject secrets at "
-                        "build time without baking them into any layer."
-                    ),
-                ))
+                findings.append(
+                    DockerfileFinding(
+                        line_number=layer.line_number,
+                        instruction=layer.instruction,
+                        check_key="env_secret",
+                        cis_id="CIS-4.9",
+                        title="Potential secret leak across multi-stage build",
+                        severity="HIGH",
+                        detail=(
+                            f"'{name}' is set in stage '{layer.stage}'. "
+                            "If it is COPY-ed or inherited, it may persist into the final image."
+                        ),
+                        layer_index=layer.index,
+                        stage=layer.stage,
+                        remediation=(
+                            "Use `RUN --mount=type=secret` (BuildKit) to inject secrets at "
+                            "build time without baking them into any layer."
+                        ),
+                    )
+                )
         return findings
 
     # ------------------------------------------------------------------

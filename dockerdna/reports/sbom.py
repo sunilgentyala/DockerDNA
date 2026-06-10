@@ -21,7 +21,7 @@ from typing import Any
 class Component:
     name: str
     version: str
-    pkg_type: str        # "deb" | "rpm" | "apk" | "pip" | "npm" | "gem" | "unknown"
+    pkg_type: str  # "deb" | "rpm" | "apk" | "pip" | "npm" | "gem" | "unknown"
     source_layer: int
     stage: str
     purl: str = ""
@@ -44,13 +44,55 @@ class Component:
 
 # Package manager install patterns
 _INSTALLERS: list[tuple[str, str, re.Pattern]] = [
-    ("deb",  "apt",    re.compile(r"apt(?:-get)?\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL)),
-    ("apk",  "apk",    re.compile(r"apk\s+add\s+(?:--[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL)),
-    ("rpm",  "yum",    re.compile(r"yum\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL)),
-    ("rpm",  "dnf",    re.compile(r"dnf\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL)),
-    ("pip",  "pip",    re.compile(r"pip(?:3)?\s+install\s+(?:--[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL)),
-    ("npm",  "npm",    re.compile(r"npm\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL)),
-    ("gem",  "gem",    re.compile(r"gem\s+install\s+(?:--[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL)),
+    (
+        "deb",
+        "apt",
+        re.compile(
+            r"apt(?:-get)?\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)",
+            re.DOTALL,
+        ),
+    ),
+    (
+        "apk",
+        "apk",
+        re.compile(r"apk\s+add\s+(?:--[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL),
+    ),
+    (
+        "rpm",
+        "yum",
+        re.compile(
+            r"yum\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL
+        ),
+    ),
+    (
+        "rpm",
+        "dnf",
+        re.compile(
+            r"dnf\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL
+        ),
+    ),
+    (
+        "pip",
+        "pip",
+        re.compile(
+            r"pip(?:3)?\s+install\s+(?:--[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)",
+            re.DOTALL,
+        ),
+    ),
+    (
+        "npm",
+        "npm",
+        re.compile(
+            r"npm\s+install\s+(?:-[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL
+        ),
+    ),
+    (
+        "gem",
+        "gem",
+        re.compile(
+            r"gem\s+install\s+(?:--[^\s]+\s+)*(.+?)(?:\s*&&|\s*$|\s*\\)", re.DOTALL
+        ),
+    ),
 ]
 
 _PKG_TOKEN = re.compile(r"[A-Za-z0-9_\-\.]+(?:=[^\s]+)?")
@@ -87,14 +129,16 @@ def extract_components(layers: list[Any]) -> list[Component]:
                     name, version = _parse_pkg(token, pkg_type)
                     if len(name) < 2:
                         continue
-                    components.append(Component(
-                        name=name,
-                        version=version,
-                        pkg_type=pkg_type,
-                        source_layer=layer.index,
-                        stage=layer.stage,
-                        purl=_make_purl(pkg_type, name, version),
-                    ))
+                    components.append(
+                        Component(
+                            name=name,
+                            version=version,
+                            pkg_type=pkg_type,
+                            source_layer=layer.index,
+                            stage=layer.stage,
+                            purl=_make_purl(pkg_type, name, version),
+                        )
+                    )
     return components
 
 
@@ -114,11 +158,13 @@ def generate_cyclonedx(
         "version": 1,
         "metadata": {
             "timestamp": now,
-            "tools": [{
-                "vendor": "DockerDNA",
-                "name": "DockerDNA SBOM Generator",
-                "version": "1.0.0",
-            }],
+            "tools": [
+                {
+                    "vendor": "DockerDNA",
+                    "name": "DockerDNA SBOM Generator",
+                    "version": "1.0.0",
+                }
+            ],
             "component": {
                 "type": "container",
                 "name": image_name,

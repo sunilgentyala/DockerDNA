@@ -16,7 +16,7 @@ from dockerdna.utils.patterns import CIS_RULES, CISRule
 @dataclass
 class ControlResult:
     rule: CISRule
-    status: str                  # PASS | FAIL | NOT_CHECKED
+    status: str  # PASS | FAIL | NOT_CHECKED
     findings: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -37,7 +37,7 @@ class ComplianceReport:
     passed: int
     failed: int
     not_checked: int
-    score: float           # 0–100 compliance score
+    score: float  # 0–100 compliance score
     controls: list[ControlResult]
 
     def to_dict(self) -> dict:
@@ -75,7 +75,9 @@ class ComplianceMapper:
 
         for f in secret_findings:
             # map secret type to a check_key
-            key = "hardcoded_secret" if f.detection_method == "pattern" else "env_secret"
+            key = (
+                "hardcoded_secret" if f.detection_method == "pattern" else "env_secret"
+            )
             hit_map.setdefault(key, []).append(f.to_dict())
 
         for f in supply_chain_findings:
@@ -99,11 +101,13 @@ class ComplianceMapper:
                     status = "NOT_CHECKED"
                     not_checked += 1
 
-            results.append(ControlResult(
-                rule=rule,
-                status=status,
-                findings=findings_for_rule,
-            ))
+            results.append(
+                ControlResult(
+                    rule=rule,
+                    status=status,
+                    findings=findings_for_rule,
+                )
+            )
 
         total = len(CIS_RULES)
         checkable = passed + failed
@@ -122,11 +126,24 @@ class ComplianceMapper:
     def _checked_keys() -> set[str]:
         """The set of check_keys that DockerDNA actually evaluates."""
         return {
-            "no_user", "latest_tag", "unnecessary_packages", "no_healthcheck",
-            "update_without_install", "env_secret", "hardcoded_secret",
-            "no_content_trust", "privileged", "excess_capabilities",
-            "sensitive_mount", "docker_socket", "host_network",
-            "no_memory_limit", "no_cpu_limit", "no_readonly_fs",
-            "no_new_privileges", "privileged_ports", "no_apparmor",
+            "no_user",
+            "latest_tag",
+            "unnecessary_packages",
+            "no_healthcheck",
+            "update_without_install",
+            "env_secret",
+            "hardcoded_secret",
+            "no_content_trust",
+            "privileged",
+            "excess_capabilities",
+            "sensitive_mount",
+            "docker_socket",
+            "host_network",
+            "no_memory_limit",
+            "no_cpu_limit",
+            "no_readonly_fs",
+            "no_new_privileges",
+            "privileged_ports",
+            "no_apparmor",
             "ssh_in_container",
         }

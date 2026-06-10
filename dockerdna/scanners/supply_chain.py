@@ -23,7 +23,7 @@ from dataclasses import dataclass
 class SupplyChainFinding:
     image: str
     stage: str
-    risk_score: int         # 0–100
+    risk_score: int  # 0–100
     factors: list[str]
     severity: str
     cis_id: str
@@ -43,18 +43,51 @@ class SupplyChainFinding:
 
 # Official Docker Library images on Docker Hub
 OFFICIAL_IMAGES = {
-    "alpine", "ubuntu", "debian", "centos", "fedora", "amazonlinux",
-    "python", "node", "ruby", "golang", "rust", "java", "openjdk",
-    "nginx", "apache", "httpd", "mysql", "postgres", "redis", "mongo",
-    "elasticsearch", "rabbitmq", "memcached", "wordpress", "drupal",
-    "php", "perl", "r-base", "swift", "dotnet", "microsoft/dotnet",
-    "scratch", "busybox", "distroless",
+    "alpine",
+    "ubuntu",
+    "debian",
+    "centos",
+    "fedora",
+    "amazonlinux",
+    "python",
+    "node",
+    "ruby",
+    "golang",
+    "rust",
+    "java",
+    "openjdk",
+    "nginx",
+    "apache",
+    "httpd",
+    "mysql",
+    "postgres",
+    "redis",
+    "mongo",
+    "elasticsearch",
+    "rabbitmq",
+    "memcached",
+    "wordpress",
+    "drupal",
+    "php",
+    "perl",
+    "r-base",
+    "swift",
+    "dotnet",
+    "microsoft/dotnet",
+    "scratch",
+    "busybox",
+    "distroless",
 }
 
 # Known malicious or suspicious image names (best-effort blocklist)
 SUSPICIOUS_PATTERNS = [
-    r"xmrig", r"monero", r"coinminer", r"cryptominer",
-    r"backdoor", r"rootkit", r"exploit",
+    r"xmrig",
+    r"monero",
+    r"coinminer",
+    r"cryptominer",
+    r"backdoor",
+    r"rootkit",
+    r"exploit",
 ]
 
 

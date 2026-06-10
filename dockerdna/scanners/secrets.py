@@ -35,7 +35,7 @@ class SecretFinding:
     severity: str
     cis_id: str
     matched_value: str
-    detection_method: str   # "pattern" | "entropy"
+    detection_method: str  # "pattern" | "entropy"
     entropy_score: Optional[float] = None
     remediation: str = ""
 
@@ -55,9 +55,7 @@ class SecretFinding:
 
 
 # Token extractor: grab quoted and unquoted values from assignment-style lines
-_ASSIGNMENT_VALUE = re.compile(
-    r"(?:=|:\s*)\"?([A-Za-z0-9+/!@#$%^&*()\-_=.]{20,})\"?"
-)
+_ASSIGNMENT_VALUE = re.compile(r"(?:=|:\s*)\"?([A-Za-z0-9+/!@#$%^&*()\-_=.]{20,})\"?")
 
 _REMEDIATIONS = {
     "pattern": (
@@ -100,19 +98,33 @@ class SecretsScanner:
             findings.extend(self._check_line(str(path), lineno, line))
         return findings
 
-    def scan_directory(self, directory: str | Path,
-                       extensions: tuple[str, ...] = (
-                           "", ".yml", ".yaml", ".env",
-                           ".env.example", ".cfg", ".ini", ".conf",
-                       )) -> list[SecretFinding]:
+    def scan_directory(
+        self,
+        directory: str | Path,
+        extensions: tuple[str, ...] = (
+            "",
+            ".yml",
+            ".yaml",
+            ".env",
+            ".env.example",
+            ".cfg",
+            ".ini",
+            ".conf",
+        ),
+    ) -> list[SecretFinding]:
         directory = Path(directory)
         findings: list[SecretFinding] = []
         for root, dirs, files in os.walk(directory):
-            dirs[:] = [d for d in dirs if d not in {".git", "__pycache__", "node_modules"}]
+            dirs[:] = [
+                d for d in dirs if d not in {".git", "__pycache__", "node_modules"}
+            ]
             for fname in files:
                 fpath = Path(root) / fname
                 if fpath.suffix.lower() in extensions or fname in (
-                    "Dockerfile", ".env", ".env.local", ".env.production"
+                    "Dockerfile",
+                    ".env",
+                    ".env.local",
+                    ".env.production",
                 ):
                     findings.extend(self.scan_file(fpath))
         return findings
@@ -135,18 +147,20 @@ class SecretsScanner:
             if match:
                 raw = match.group(0)
                 value = self._redact(raw) if self.redact else raw
-                results.append(SecretFinding(
-                    file=filepath,
-                    line_number=lineno,
-                    line_content=line,
-                    secret_type=name,
-                    severity=severity,
-                    cis_id=cis_id,
-                    matched_value=value,
-                    detection_method="pattern",
-                    remediation=_REMEDIATIONS["pattern"],
-                ))
-                return results   # one finding per line is enough
+                results.append(
+                    SecretFinding(
+                        file=filepath,
+                        line_number=lineno,
+                        line_content=line,
+                        secret_type=name,
+                        severity=severity,
+                        cis_id=cis_id,
+                        matched_value=value,
+                        detection_method="pattern",
+                        remediation=_REMEDIATIONS["pattern"],
+                    )
+                )
+                return results  # one finding per line is enough
 
         # 2. Entropy analysis on assignment RHS values
         for m in _ASSIGNMENT_VALUE.finditer(line):
@@ -154,20 +168,23 @@ class SecretsScanner:
             if is_high_entropy_secret(token):
                 value = self._redact(token) if self.redact else token
                 from dockerdna.utils.patterns import shannon_entropy
+
                 score = round(shannon_entropy(token), 3)
-                results.append(SecretFinding(
-                    file=filepath,
-                    line_number=lineno,
-                    line_content=line,
-                    secret_type="High-Entropy String",
-                    severity="HIGH",
-                    cis_id="CIS-4.10",
-                    matched_value=value,
-                    detection_method="entropy",
-                    entropy_score=score,
-                    remediation=_REMEDIATIONS["entropy"],
-                ))
-                break   # one per line
+                results.append(
+                    SecretFinding(
+                        file=filepath,
+                        line_number=lineno,
+                        line_content=line,
+                        secret_type="High-Entropy String",
+                        severity="HIGH",
+                        cis_id="CIS-4.10",
+                        matched_value=value,
+                        detection_method="entropy",
+                        entropy_score=score,
+                        remediation=_REMEDIATIONS["entropy"],
+                    )
+                )
+                break  # one per line
 
         return results
 
