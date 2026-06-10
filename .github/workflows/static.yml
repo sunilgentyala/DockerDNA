@@ -24,11 +24,13 @@ jobs:
       - name: Checkout Source Tree
         uses: actions/checkout@v4
 
-      - name: Setup GitHub Pages Environment Node
-        uses: actions/configure-pages@v4
-
-      # Clean out backend environments so the static packager cannot get stuck
+     # Clean out backend environments dynamically to minimize the bundle surface
       - name: Purge Heavy Python Workspaces
+        run: |
+          rm -rf dockerdna/ tests/ examples/ docs/
+          rm -f pyproject.toml LICENSE README.md
+          rm -rf .github/
+          rm -f .gitignore
         run: |
           rm -rf dockerdna/ tests/ examples/ docs/ .github/
           rm -f pyproject.toml LICENSE README.md .gitignore
