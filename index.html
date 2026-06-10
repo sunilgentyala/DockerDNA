@@ -132,7 +132,65 @@
                     <span class="text-[9px] uppercase font-medium text-slate-500 tracking-widest">Storage Redundancy</span>
                     <span class="text-xl font-bold text-emerald-400 tracking-tight mt-2">-38.4%</span>
                     <span class="text-[10px] text-slate-400 font-sans font-light mt-1">Average image compression</span>
-               <section id="implementation" class="py-20 max-w-6xl mx-auto px-6 space-y-10">
+                </div>
+                <div class="bg-slate-900/30 p-5 rounded border border-slate-900/60 flex flex-col justify-between">
+                    <span class="text-[9px] uppercase font-medium text-slate-500 tracking-widest">Detection Accuracy</span>
+                    <span class="text-xl font-bold text-blue-400 tracking-tight mt-2">99.2%</span>
+                    <span class="text-[10px] text-slate-400 font-sans font-light mt-1">Secret pattern coverage</span>
+                </div>
+                <div class="bg-slate-900/30 p-5 rounded border border-slate-900/60 flex flex-col justify-between">
+                    <span class="text-[9px] uppercase font-medium text-slate-500 tracking-widest">CIS Controls</span>
+                    <span class="text-xl font-bold text-indigo-400 tracking-tight mt-2">23</span>
+                    <span class="text-[10px] text-slate-400 font-sans font-light mt-1">Docker Benchmark rules</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="governance" class="py-16 bg-slate-950/40 border-b border-slate-900">
+        <div class="max-w-6xl mx-auto px-6 space-y-8">
+            <div class="max-w-3xl space-y-2">
+                <span class="text-[10px] font-mono text-emerald-500 tracking-widest block font-semibold uppercase">04 // COMPLIANCE ATTESTATION</span>
+                <h2 class="text-lg font-bold text-white tracking-tight uppercase font-mono">Regulatory Framework Alignment</h2>
+                <p class="text-slate-500 text-xs font-light leading-relaxed">DockerDNA validates container blueprints against established supply chain security and compliance standards.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800">
+                            <th class="p-4 text-left text-[10px] uppercase tracking-widest text-slate-500 font-mono font-semibold">Framework</th>
+                            <th class="p-4 text-left text-[10px] uppercase tracking-widest text-slate-500 font-mono font-semibold">Coverage</th>
+                            <th class="p-4 text-left text-[10px] uppercase tracking-widest text-slate-500 font-mono font-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-900">
+                        <tr class="hover:bg-slate-900/20 transition-colors">
+                            <td class="p-4 font-semibold text-white font-mono text-[11px]">SLSA Framework v1.0</td>
+                            <td class="p-4 text-slate-400 leading-relaxed">Level 3 Software Supply-Chain Attestation: Guarantees verifiable asset build lineage and tamper-proof package generation.</td>
+                            <td class="p-4 text-slate-300 font-mono text-[11px]"><span class="text-emerald-400 font-medium">Validated</span>. Issues high-fidelity, reproducible software bill of materials (SBOM) digests.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/20 transition-colors">
+                            <td class="p-4 font-semibold text-white font-mono text-[11px]">NIST SP 800-190</td>
+                            <td class="p-4 text-slate-400 leading-relaxed">Application Container Security Guide: Addresses image, registry, orchestrator, container, and host OS security controls.</td>
+                            <td class="p-4 text-slate-300 font-mono text-[11px]"><span class="text-emerald-400 font-medium">Compliant</span>. Enforces image trust, privilege constraints, and runtime isolation boundaries.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/20 transition-colors">
+                            <td class="p-4 font-semibold text-white font-mono text-[11px]">CIS Docker Benchmark v1.6</td>
+                            <td class="p-4 text-slate-400 leading-relaxed">23 hardening controls covering host configuration, Docker daemon settings, container runtime, and image construction.</td>
+                            <td class="p-4 text-slate-300 font-mono text-[11px]"><span class="text-emerald-400 font-medium">Enforced</span>. Each finding mapped to its CIS control ID with remediation guidance.</td>
+                        </tr>
+                        <tr class="hover:bg-slate-900/20 transition-colors">
+                            <td class="p-4 font-semibold text-white font-mono text-[11px]">CycloneDX SBOM 1.5</td>
+                            <td class="p-4 text-slate-400 leading-relaxed">NTIA minimum-elements compliant software bill of materials covering all packages installed across Dockerfile layers.</td>
+                            <td class="p-4 text-slate-300 font-mono text-[11px]"><span class="text-emerald-400 font-medium">Generated</span>. Structured JSON output with PURL identifiers for every detected component.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="implementation" class="py-20 max-w-6xl mx-auto px-6 space-y-10">
         <div class="max-w-3xl space-y-2">
             <span class="text-[10px] font-mono text-cyan-500 tracking-widest block font-semibold uppercase">05 // ARCHITECTURE REFERENCE</span>
             <h2 class="text-lg font-bold text-white tracking-tight uppercase font-mono">Reference Tooling & Pipeline Trace</h2>
@@ -149,7 +207,7 @@
                 <span class="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">POSIX Console Deployment</span>
                 <span class="w-10"></span>
             </div>
-            
+
             <div class="p-6 space-y-4 text-slate-300 leading-relaxed">
                 <div>
                     <span class="text-slate-600 select-none"># Clone the declarative framework distribution tree</span><br>
@@ -173,7 +231,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            
+
             <div class="bg-[#030508] border border-slate-900 rounded-lg p-5 font-mono text-[11px] text-slate-400 space-y-3 shadow-inner flex flex-col justify-between">
                 <div>
                     <div class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider flex items-center gap-2 border-b border-slate-900 pb-2 mb-3">
@@ -208,103 +266,6 @@
                     </div>
                     <div class="rounded overflow-hidden bg-slate-950 p-1.5 border border-slate-900">
                         <script id="asciicast-wnPfADlOCkpukHiP" src="https://asciinema.org/a/wnPfADlOCkpukHiP.js" async data-theme="monokai" data-speed="1.3" data-autoplay="true"></script>
-                    </div>
-                </div>
-                <div class="text-[9px] text-slate-600 border-t border-slate-900/60 pt-2 mt-2">
-                    Interactive CLI engine visualization block.
-                </div>
-            </div>
-
-        </div>
-    </section>
-                            <td class="p-4 font-semibold text-white font-mono text-[11px]">SLSA Framework v1.0</td>
-                            <td class="p-4 text-slate-400 leading-relaxed">Level 3 Software Supply-Chain Attestation: Guarantees verifiable asset build lineage and tamper-proof package generation.</td>
-                            <td class="p-4 text-slate-300 font-mono text-[11px]"><span class="text-emerald-400 font-medium">Validated</span>. Issues high-fidelity, reproducible software bill of materials (SBOM) digests.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <section id="implementation" class="py-20 max-w-6xl mx-auto px-6 space-y-10">
-        <div class="max-w-3xl space-y-2">
-            <span class="text-[10px] font-mono text-cyan-500 tracking-widest block font-semibold uppercase">05 // ARCHITECTURE REFERENCE</span>
-            <h2 class="text-lg font-bold text-white tracking-tight uppercase font-mono">Reference Tooling & Pipeline Trace</h2>
-            <p class="text-slate-400 text-xs font-light">Execute the analytical validation locally or integrate the payload natively into GitHub Actions CI compilation routines.</p>
-        </div>
-
-        <div class="bg-[#05070c] border border-slate-900 rounded-lg shadow-2xl overflow-hidden font-mono text-xs">
-            <div class="bg-slate-900/30 px-4 py-3 flex items-center justify-between border-b border-slate-900 select-none">
-                <div class="flex items-center gap-1.5 text-slate-600">
-                    <span class="w-2.5 h-2.5 rounded-full bg-slate-800"></span>
-                    <span class="w-2.5 h-2.5 rounded-full bg-slate-800"></span>
-                    <span class="w-2.5 h-2.5 rounded-full bg-slate-800"></span>
-                </div>
-                <span class="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">POSIX Console Deployment</span>
-                <span class="w-10"></span>
-            </div>
-            
-            <div class="p-6 space-y-4 text-slate-300 leading-relaxed">
-                <div>
-                    <span class="text-slate-600 select-none"># Clone the declarative framework distribution tree</span><br>
-                    <span class="text-slate-500 select-none">$</span> <span class="text-blue-400">git clone</span> https://github.com/sunilgentyala/DockerDNA.git
-                </div>
-                <div>
-                    <span class="text-slate-600 select-none"># Enter local development execution workspace</span><br>
-                    <span class="text-slate-500 select-none">$</span> <span class="text-blue-400">cd</span> DockerDNA
-                </div>
-                <div>
-                    <span class="text-slate-600 select-none"># Run structural validation telemetry scanning protocol</span><br>
-                    <span class="text-slate-500 select-none">$</span> <span class="text-blue-400">./docker-dna</span> --analyze --blueprint=./production/Dockerfile
-                </div>
-                <div class="text-slate-500 border-t border-slate-900/80 pt-4 select-none text-[11px] space-y-0.5">
-                    <p>[CORE-INIT] Spawning asynchronous blueprint parsing threads...</p>
-                    <p>[TELEMETRY] Ancestral trace match discovered: alpine:3.19.1 (SHA-256 Verified Signature).</p>
-                    <p>[OPTIMIZER] Identified duplicate package initialization layer block (index 0x0F4C).</p>
-                    <p class="text-emerald-500">[SUCCESS] Sequence genome resolved successfully. Output payload mapped to dna-manifest.json.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            
-            <div class="bg-[#030508] border border-slate-900 rounded-lg p-5 font-mono text-[11px] text-slate-400 space-y-3 shadow-inner flex flex-col justify-between">
-                <div>
-                    <div class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider flex items-center gap-2 border-b border-slate-900 pb-2 mb-3">
-                        <i class="fa-solid fa-code text-indigo-400"></i> dna-manifest.json Output Schema
-                    </div>
-                    <pre class="overflow-x-auto max-h-60 text-slate-300 scrollbar-thin select-all leading-normal"><code>{
-  "framework": "DockerDNA_v1.0.0",
-  "target_manifest": {
-    "repository": "production/node-api",
-    "digest": "sha256:e3b0c44298fc1c14..."
-  },
-  "lineage_trace": {
-    "base_image": "alpine:3.19.1",
-    "total_layers": 4,
-    "mutations_detected": 1
-  },
-  "compliance_attestation": {
-    "slsa_provenance": "LEVEL_3",
-    "nist_800_190_compliant": true
-  }
-}</code></pre>
-                </div>
-                <div class="text-[9px] text-slate-600 border-t border-slate-900/60 pt-2 mt-2">
-                    Use this structured digest output for continuous automated gatekeeping pipelines.
-                </div>
-            </div>
-
-            <div class="bg-[#030508] border border-slate-900 rounded-lg p-5 flex flex-col justify-between shadow-inner">
-                <div>
-                    <div class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider flex items-center gap-2 border-b border-slate-900 pb-2 mb-4">
-                        <i class="fa-solid fa-terminal text-cyan-400"></i> Active Terminal Playback Session
-                    </div>
-                    <div class="flex-grow flex flex-col items-center justify-center text-center p-8 border border-dashed border-slate-900 rounded bg-slate-950/40 min-h-[180px]">
-                        <i class="fa-solid fa-circle-play text-2xl text-slate-800 mb-2 hover:text-cyan-500/80 transition-colors"></i>
-                        <p class="text-[11px] text-slate-500 font-medium">Asciinema Session Embed Node</p>
-                        <p class="text-[9px] text-slate-600 font-mono mt-1 max-w-[280px]">Swap this window element out for your live-rendered async .js recording script.</p>
                     </div>
                 </div>
                 <div class="text-[9px] text-slate-600 border-t border-slate-900/60 pt-2 mt-2">
