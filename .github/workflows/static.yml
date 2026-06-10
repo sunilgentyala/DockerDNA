@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
      # Clean out backend environments dynamically to minimize the bundle surface
+      # Clean out backend environments safely without touching system workflow files
       - name: Purge Heavy Python Workspaces
         run: |
           rm -rf dockerdna/ tests/ examples/ docs/
