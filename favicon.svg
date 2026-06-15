@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#2563EB"/>
+      <stop offset="50%"  stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="dg2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Dark background circle -->
+  <rect width="32" height="32" rx="7" fill="#05070c"/>
+
+  <!-- Outer hex border glow -->
+  <rect width="32" height="32" rx="7" fill="none"
+        stroke="url(#dg)" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- DNA double helix - left strand (sine wave) -->
+  <!-- Strand 1: blue top-to-bottom sinusoid -->
+  <path d="M10 4 C14 7, 18 7, 22 10 C18 13, 14 13, 10 16 C14 19, 18 19, 22 22 C18 25, 14 25, 10 28"
+        fill="none" stroke="url(#dg)" stroke-width="2.2"
+        stroke-linecap="round"/>
+
+  <!-- Strand 2: cyan bottom-to-top sinusoid (opposite phase) -->
+  <path d="M22 4 C18 7, 14 7, 10 10 C14 13, 18 13, 22 16 C18 19, 14 19, 10 22 C14 25, 18 25, 22 28"
+        fill="none" stroke="url(#dg2)" stroke-width="2.2"
+        stroke-linecap="round"/>
+
+  <!-- Cross-rungs (base pairs) -->
+  <line x1="16" y1="8"  x2="16" y2="8"  stroke="#6366F1" stroke-width="1.6"
+        stroke-linecap="round"/>
+  <line x1="13" y1="10" x2="19" y2="10" stroke="#6366F1" stroke-width="1.4" opacity="0.9"/>
+  <line x1="16" y1="13" x2="16" y2="13" stroke="#06B6D4" stroke-width="1.6"/>
+  <line x1="13" y1="16" x2="19" y2="16" stroke="#3B82F6" stroke-width="1.4" opacity="0.9"/>
+  <line x1="16" y1="19" x2="16" y2="19" stroke="#6366F1" stroke-width="1.6"/>
+  <line x1="13" y1="22" x2="19" y2="22" stroke="#06B6D4" stroke-width="1.4" opacity="0.9"/>
+</svg>
