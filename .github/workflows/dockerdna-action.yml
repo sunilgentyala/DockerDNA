@@ -46,6 +46,11 @@ jobs:
 
       - name: Run DockerDNA scan
         id: scan
+        # NOTE: do not swallow the exit code here (e.g. with `|| echo ...`).
+        # dockerdna exits 1 when --threshold is exceeded specifically so this
+        # step, and therefore the job, fails and blocks the PR. The upload
+        # steps below use `if: always()` so reports still get published even
+        # when the scan step fails the job.
         run: |
           COMPOSE_ARG=""
           if [ -n "${{ inputs.compose_file }}" ] && [ -f "${{ inputs.compose_file }}" ]; then
@@ -55,7 +60,7 @@ jobs:
             $COMPOSE_ARG \
             --format ${{ inputs.formats }} \
             --threshold ${{ inputs.threshold }} \
-            --output dockerdna-results || echo "::warning::DockerDNA found security issues"
+            --output dockerdna-results
 
       - name: Upload SARIF results
         uses: github/codeql-action/upload-sarif@v4

@@ -1,9 +1,8 @@
 """
 AI-powered remediation using Anthropic Claude.
 
-Unlike DockSec which uses AI to explain Trivy/Hadolint output,
-DockerDNA's AI module synthesises findings from ALL scanners
-(Dockerfile, compose, secrets, supply-chain) and produces:
+Synthesises findings from ALL of DockerDNA's scanners (Dockerfile,
+compose, secrets, supply-chain) into one remediation pass and produces:
   1. A prioritised fix plan with CIS control IDs
   2. A rewritten Dockerfile with all issues corrected
   3. A rewritten docker-compose with all misconfigs fixed

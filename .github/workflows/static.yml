@@ -27,11 +27,14 @@ jobs:
       - name: Setup GitHub Pages Environment Node
         uses: actions/configure-pages@v4
 
-      # We isolate the builder by copying ONLY index.html into a fresh, empty deployment target folder
+      # Copy the published page plus the assets it references (thumbnail.png for
+      # Open Graph/Twitter cards, favicon.svg) into a fresh deployment target folder.
       - name: Stage Web Production Artifact
         run: |
           mkdir public
           cp index.html public/
+          cp thumbnail.png public/
+          cp favicon.svg public/
 
       - name: Upload Static Web Production Artifacts
         uses: actions/upload-pages-artifact@v3

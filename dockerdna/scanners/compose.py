@@ -1,9 +1,9 @@
 """
 docker-compose.yml security scanner.
 
-DockSec scans only Dockerfiles and pre-built images.
-DockerDNA extends analysis to docker-compose files — catching
-runtime misconfigurations that never appear in the image itself.
+Audits runtime configuration in docker-compose files — catching
+misconfigurations (privileged mode, socket mounts, missing resource
+limits, host networking) that never appear in a Dockerfile-only scan.
 
 Checks mapped to CIS Docker Benchmark v1.6 Section 5.
 """

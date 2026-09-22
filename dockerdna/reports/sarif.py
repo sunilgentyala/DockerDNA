@@ -1,7 +1,6 @@
 """
 SARIF 2.1.0 output for GitHub Advanced Security integration.
 
-DockSec lacks SARIF output (it is listed as an open issue #45).
 DockerDNA ships with full SARIF support out of the box, enabling
 GitHub Security tab annotations on pull requests.
 """
@@ -15,7 +14,7 @@ from typing import Any
 _TOOL = {
     "driver": {
         "name": "DockerDNA",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "informationUri": "https://github.com/sunilgentyala/DockerDNA",
         "rules": [],
     }

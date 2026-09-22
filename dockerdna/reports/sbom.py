@@ -2,9 +2,7 @@
 CycloneDX SBOM (Software Bill of Materials) generator.
 
 Parses Dockerfile package install instructions to produce a
-CycloneDX 1.5 JSON SBOM documenting what is installed in each layer.
-
-DockSec does not generate SBOMs. DockerDNA fills this gap,
+CycloneDX 1.5 JSON SBOM documenting what is installed in each layer,
 enabling supply-chain transparency and NTIA minimum-elements compliance.
 """
 
@@ -162,7 +160,7 @@ def generate_cyclonedx(
                 {
                     "vendor": "DockerDNA",
                     "name": "DockerDNA SBOM Generator",
-                    "version": "1.0.1",
+                    "version": "1.0.2",
                 }
             ],
             "component": {

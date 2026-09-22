@@ -10,8 +10,8 @@ Finds hardcoded secrets, tokens, and credentials in:
 Uses two complementary strategies:
   1. Regex pattern matching against 20+ known secret formats
   2. Shannon entropy analysis to catch unknown high-entropy tokens
-
-Neither strategy is used by DockSec, Trivy, or Hadolint.
+     that match no known pattern (Trivy's secret scanner, for
+     comparison, is regex-only; see README for a verified comparison)
 """
 
 import os

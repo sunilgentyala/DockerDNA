@@ -1,8 +1,8 @@
 """
 CIS Docker Benchmark v1.6 compliance report generator.
 
-Aggregates findings from all scanners and maps them to CIS controls,
-producing a structured pass/fail scorecard that DockSec does not provide.
+Aggregates findings from all scanners and maps them to specific CIS Docker
+Benchmark control IDs, producing a structured pass/fail/not-checked scorecard.
 """
 
 from __future__ import annotations

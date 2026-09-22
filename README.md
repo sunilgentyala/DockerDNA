@@ -7,26 +7,30 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CIS Docker Benchmark](https://img.shields.io/badge/CIS-Docker%20Benchmark%20v1.6-orange)](https://www.cisecurity.org/benchmark/docker)
 
-DockerDNA is an open-source container security scanner that goes beyond static Dockerfile analysis to cover the **security gaps** left by existing tools including [OWASP DockSec](https://github.com/OWASP/DockSec).
+DockerDNA is an open-source container security scanner focused on **pre-build analysis**: layer-by-layer Dockerfile attribution, docker-compose.yml auditing, CIS-mapped findings, dual-mode secret detection (regex + Shannon entropy), supply-chain risk scoring, SARIF, and CycloneDX output. It's designed to complement tools like [OWASP DockSec](https://github.com/OWASP/DockSec), Trivy, and Hadolint, not replace them.
 
 ---
 
 ## What Makes DockerDNA Unique
 
+Verified against each project's public documentation, September 2026. Tools evolve quickly - always
+check upstream docs before relying on this. "not documented" means the capability could not be
+confirmed either way, not that it's absent.
+
 | Capability | DockerDNA | DockSec | Trivy | Hadolint |
 |---|:---:|:---:|:---:|:---:|
-| Dockerfile security scan | YES | YES | - | YES |
-| **docker-compose.yml scanner** | **YES** | NO | NO | NO |
-| **Secrets detection (regex + entropy)** | **YES** | NO | partial | NO |
-| **Shannon entropy analysis** | **YES** | NO | NO | NO |
-| **CIS Docker Benchmark mapping** | **YES** | NO | NO | NO |
-| **SBOM (CycloneDX 1.5)** | **YES** | NO | YES | NO |
-| **SARIF output** | **YES** | NO (open issue) | YES | NO |
-| **Supply chain risk scoring** | **YES** | NO | NO | NO |
-| **Multi-stage build secret leak detection** | **YES** | NO | NO | NO |
-| **CI/CD threshold gate (--threshold)** | **YES** | NO (open issue) | YES | NO |
-| AI remediation | YES | YES | NO | NO |
-| Layer-by-layer attribution | YES | NO | NO | NO |
+| Dockerfile security scan | YES | YES | partial (image/IaC scan) | YES |
+| **docker-compose.yml scanner** | **YES** | YES | not documented | NO |
+| **Secrets detection** | **YES (regex + entropy)** | YES (via Trivy) | YES (regex, built-in rules) | NO |
+| **Entropy detection for unknown secrets** | **YES** | not documented | NO (regex-only) | NO |
+| **CIS Docker Benchmark control-ID mapping** | **YES** | not documented | NO | NO |
+| **SBOM (CycloneDX)** | **YES** | YES | YES | NO |
+| **SARIF output** | **YES** | YES | YES | NO |
+| **Supply chain image risk scoring** | **YES** | not documented | partial (CVE-based) | NO |
+| **Multi-stage build secret leak detection** | **YES** | not documented | NO | NO |
+| **CI/CD threshold gate** | **YES (--threshold)** | YES (--fail-on) | YES | NO |
+| AI-powered remediation | YES (Claude) | YES (multi-LLM) | NO | NO |
+| Layer-by-layer attribution | YES | not documented | NO | NO |
 
 ---
 
@@ -45,7 +49,7 @@ DockerDNA scans Dockerfiles, docker-compose.yml, .env files, and any project fil
 
 ### 2. docker-compose.yml Security Scanner
 
-The only tool that systematically audits docker-compose files against CIS Docker Benchmark controls:
+Audits docker-compose files and maps every finding to a specific CIS Docker Benchmark control ID:
 
 ```
 [CRITICAL] CIS-5.4  webapp: Privileged mode enabled
@@ -190,13 +194,21 @@ jobs:
 
 ## Comparison with OWASP DockSec
 
-DockSec is an excellent tool for wrapping Trivy + Hadolint with AI explanations. DockerDNA fills the gaps:
+DockSec wraps Trivy, Hadolint, and Docker Scout with multi-LLM AI explanations and automated
+patching, and (per its current docs, checked September 2026) also covers docker-compose scanning,
+SARIF, SBOM, and a `--fail-on` CI gate. DockerDNA focuses specifically on pre-build analysis with a
+few things not documented elsewhere:
 
-- **DockSec** analyzes images that already exist (pull + scan). DockerDNA analyzes the **build definition** - catching issues before an image is ever built.
-- **DockSec** has no `docker-compose.yml` scanner. Runtime misconfigs (privileged mode, socket mounts, missing resource limits) are invisible to it.
-- **DockSec** relies on Trivy for secret scanning, which covers common cases but misses custom/high-entropy secrets. DockerDNA's dual-mode scanner (pattern + entropy) catches both known and unknown formats.
-- **DockSec** produces no SARIF output (open GitHub issue #45). DockerDNA ships SARIF 2.1.0 by default.
-- **DockSec** has no CIS benchmark compliance scorecard. DockerDNA maps every finding to a specific CIS Docker Benchmark v1.6 control.
+- **Entropy-based secret detection.** DockSec's secret handling isn't publicly documented beyond
+  redaction; Trivy (which DockSec wraps) is regex-only. DockerDNA's dual-mode scanner (pattern +
+  Shannon entropy) also catches custom or rotated credentials that match no known pattern.
+- **CIS Docker Benchmark control-ID mapping.** Every finding is tagged with its specific CIS v1.6
+  control ID and rolled into a pass/fail/not-checked compliance scorecard, not just a severity bucket.
+- **Layer-by-layer attribution.** Every finding traces back to the exact instruction and build stage
+  that introduced it, including secrets that leak across multi-stage builds.
+
+If you already use DockSec for its AI-powered explanations and automated Dockerfile patching,
+DockerDNA is a good complement for pre-build compose/secrets/compliance analysis, not a replacement.
 
 ---
 
@@ -226,6 +238,13 @@ pytest
 | `DOCKER_CONTENT_TRUST` | Set to `1` to enable image signing verification |
 
 ---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get set up, [CHANGELOG.md](CHANGELOG.md) for what's
+changed and what's on the roadmap, and [SECURITY.md](SECURITY.md) to report a vulnerability
+(please don't file those as a public issue). This project follows the
+[Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ## License
 
