@@ -3,6 +3,22 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.5]
+
+### Fixed
+
+- **`thumbnail.png` had the same fabricated content as the old website, baked into the image
+  itself.** Found while uploading it as the repo's GitHub social preview: false "SLSA v1.0
+  Level 3 · NIST SP 800-190" compliance badges, invented performance numbers (`<142ms`, `99.2%`,
+  `38.4%`), a fake feature grid ("Merkle DAG", "Provenance Graph", etc.), and **"CISM · ISACA"
+  credential pills that don't correspond to any certification on record** for the author. This
+  same file was already deployed to the live site (via the `static.yml` fix in 1.0.2) and had
+  just been uploaded to GitHub's own social preview. Rewrote `make_thumbnail.py` to render only
+  verified content (real test/pattern/control counts, the actual scanner feature set, and only
+  the IEEE Senior Member credential that's used consistently everywhere else in this repo),
+  fixed a layout bug in the regenerated version (stats overlapping the title), regenerated the
+  PNG, and replaced it everywhere it was deployed.
+
 ## [Unreleased] — Roadmap
 
 Not yet done — tracked here so contributors have somewhere concrete to start:

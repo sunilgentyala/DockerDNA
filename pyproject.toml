@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dockerdna"
-version = "1.0.4"
+version = "1.0.5"
 description = "Layer-by-Layer Container Security DNA Analysis — secrets detection, compose scanning, CIS compliance, SBOM, and SARIF output"
 readme = "README.md"
 license = { text = "MIT" }

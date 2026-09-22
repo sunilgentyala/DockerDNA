@@ -14,7 +14,7 @@ from typing import Any
 _TOOL = {
     "driver": {
         "name": "DockerDNA",
-        "version": "1.0.4",
+        "version": "1.0.5",
         "informationUri": "https://github.com/sunilgentyala/DockerDNA",
         "rules": [],
     }

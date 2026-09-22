@@ -155,18 +155,19 @@ fWs = font("black", 80)
 WX  = 360
 
 docker_w  = draw.textlength("Docker", font=fW)
-draw.text((WX, 58), "Docker", font=fW, fill=TEXT)
-draw.text((WX + docker_w, 58), "DNA", font=fWs, fill=BLUE_L)
+TY = 108
+draw.text((WX, TY), "Docker", font=fW, fill=TEXT)
+draw.text((WX + docker_w, TY), "DNA", font=fWs, fill=BLUE_L)
 
 # gradient underline
 wl = int(draw.textlength("DockerDNA", font=fW))
-h_grad(draw, WX, 155, wl, 4, BLUE, INDIGO, CYAN)
+h_grad(draw, WX, TY + 97, wl, 4, BLUE, INDIGO, CYAN)
 
 # tagline
 fTag = font("reg", 21)
-draw.text((WX, 175), "Cryptographic Container Lineage", font=fTag, fill=MUTED)
+draw.text((WX, TY + 117), "Layer-by-Layer Container Security", font=fTag, fill=MUTED)
 fSub = font("reg", 16)
-draw.text((WX, 205), "& Deterministic Structural Auditing Framework", font=fSub, fill=DIM)
+draw.text((WX, TY + 147), "DNA Analysis  ·  Open Source  ·  MIT License", font=fSub, fill=DIM)
 
 # ── vertical divider ─────────────────────────────────────────────
 draw.line([(355, 58), (355, 555)], fill=BORDER, width=1)
@@ -176,7 +177,7 @@ RX = 385
 
 # ── compliance pill ──────────────────────────────────────────────
 fBadge = font("bold", 13)
-badge_txt = "SLSA v1.0 Level 3  ·  NIST SP 800-190  ·  CIS Docker v1.6"
+badge_txt = "Secrets + Entropy  ·  Compose Audit  ·  CIS Docker Benchmark v1.6  ·  SARIF  ·  SBOM"
 bw = int(draw.textlength(badge_txt, font=fBadge)) + 40
 rr(draw, RX, 62, bw, 34, 17, fill=(5, 20, 45), outline=(37, 99, 235, 180))
 draw.ellipse([RX+14, 73, RX+22, 81], fill=CYAN)
@@ -188,49 +189,50 @@ fUnit  = font("bold",  16)
 fNote  = font("reg",   13)
 
 stats = [
-    ("<142ms", "Analysis",   "Time",    BLUE_L),
-    ("99.2%",  "Detection",  "Accuracy", CYAN),
-    ("38.4%",  "Compression","Ratio",    INDIGO),
+    ("31",  "Tests",   "Passing",  BLUE_L),
+    ("20+", "Secret",  "Patterns", CYAN),
+    ("20",  "CIS Controls", "Checked", INDIGO),
 ]
+STATS_Y = 300
 sx = RX
 for val, l1, l2, color in stats:
     vw = int(draw.textlength(val, font=fBig))
-    draw.text((sx, 108), val, font=fBig, fill=color)
-    draw.text((sx+vw+8, 118), l1, font=fUnit, fill=MUTED)
-    draw.text((sx+vw+8, 140), l2, font=fUnit, fill=MUTED)
+    draw.text((sx, STATS_Y), val, font=fBig, fill=color)
+    draw.text((sx+vw+8, STATS_Y+10), l1, font=fUnit, fill=MUTED)
+    draw.text((sx+vw+8, STATS_Y+32), l2, font=fUnit, fill=MUTED)
     sx += vw + 90 + int(draw.textlength("  ", font=fUnit))
     if sx > W - 100:
         break
 
 # draw divider under stats
-draw.line([(RX, 210), (W-60, 210)], fill=BORDER, width=1)
+draw.line([(RX, 390), (W-60, 390)], fill=BORDER, width=1)
 
-# ── feature grid (3 cols × 3 rows) ───────────────────────────────
+# ── feature grid (2 cols x 4 rows) ───────────────────────────────
 features = [
-    (BLUE_L,  "Layer Fingerprint",    "SHA-256 per layer",    CYAN,   "Merkle DAG",        "Tamper-proof chain"),
-    (INDIGO,  "Delta Compression",    "38.4% avg savings",    BLUE_L, "SBOM Generation",   "CycloneDX 1.5"),
-    (CYAN,    "Drift Detection",       "Behavioral delta",    INDIGO, "Provenance Graph",  "SLSA v1.0 L3"),
-    (BLUE_L,  "Reg Compliance",       "NIST + CIS checks",    CYAN,   "Supply Chain Sec.", "Sigstore verify"),
+    (BLUE_L,  "Secrets Detection",    "Regex + Shannon entropy",  CYAN,   "Compose Scanner",     "CIS Benchmark Sect. 5"),
+    (INDIGO,  "CIS Compliance",       "Pass/fail scorecard",      BLUE_L, "SBOM Generation",     "CycloneDX 1.5"),
+    (CYAN,    "SARIF Output",         "GitHub Security tab",      INDIGO, "Supply Chain Risk",   "0-100 image score"),
+    (BLUE_L,  "Layer Attribution",    "Per-instruction findings", CYAN,   "AI Remediation",      "Claude-powered"),
 ]
 
-fFeat = font("bold", 16)
-fFsub = font("reg",  13)
+fFeat = font("bold", 15)
+fFsub = font("reg",  12)
 col1x = RX
 col2x = RX + 390
-rowY  = 230
-rowH  = 70
+rowY  = 392
+rowH  = 39
 
 for i, (c1, t1, s1, c2, t2, s2) in enumerate(features):
     ry = rowY + i * rowH
     # col1
     draw.ellipse([col1x+3, ry+6, col1x+11, ry+14], fill=c1)
     draw.text((col1x+20, ry), t1, font=fFeat, fill=TEXT)
-    draw.text((col1x+20, ry+22), s1, font=fFsub, fill=DIM)
+    draw.text((col1x+20, ry+20), s1, font=fFsub, fill=DIM)
     # col2
     if col2x + 20 < W - 40:
         draw.ellipse([col2x+3, ry+6, col2x+11, ry+14], fill=c2)
         draw.text((col2x+20, ry), t2, font=fFeat, fill=TEXT)
-        draw.text((col2x+20, ry+22), s2, font=fFsub, fill=DIM)
+        draw.text((col2x+20, ry+20), s2, font=fFsub, fill=DIM)
 
 # ══════════════ BOTTOM BAR ════════════════════════════════════════
 draw.rectangle([0, 548, W, H], fill=BG2)
@@ -240,15 +242,13 @@ fName = font("bold", 17)
 fCred = font("reg",  13)
 fUrl  = font("bold", 13)
 
-draw.text((72, 570), "Sunil Gentyala", font=fName, fill=TEXT)
-draw.text((72, 597), "IEEE Senior Member  ·  CISM  ·  ISACA  ·  HCL America Inc., Dallas TX",
+draw.text((72, 570), "Sunil Gentyala, Independent Researcher", font=fName, fill=TEXT)
+draw.text((72, 597), "IEEE Senior Member  ·  Security Researcher",
           font=fCred, fill=MUTED)
 
 # credential pills
 pills = [
     ("IEEE Sr. Member", BLUE_L, (8,  20, 45)),
-    ("CISM",            CYAN,   (5,  25, 38)),
-    ("ISACA",           INDIGO, (20, 12, 50)),
 ]
 px = 410
 fPill = font("reg", 12)
