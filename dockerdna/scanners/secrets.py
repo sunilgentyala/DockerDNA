@@ -23,6 +23,7 @@ from typing import Optional
 from dockerdna.utils.patterns import (
     SECRET_PATTERNS,
     is_high_entropy_secret,
+    redact_value,
 )
 
 
@@ -147,11 +148,21 @@ class SecretsScanner:
             if match:
                 raw = match.group(0)
                 value = self._redact(raw) if self.redact else raw
+                # NOTE: line_content must never carry the raw secret when
+                # redact=True — it flows verbatim into report.json (and any
+                # CI artifact built from it), bypassing matched_value's
+                # redaction entirely. Splice the already-redacted value back
+                # into the line instead of storing the raw line.
+                content = (
+                    line[: match.start()] + value + line[match.end() :]
+                    if self.redact
+                    else line
+                )
                 results.append(
                     SecretFinding(
                         file=filepath,
                         line_number=lineno,
-                        line_content=line,
+                        line_content=content,
                         secret_type=name,
                         severity=severity,
                         cis_id=cis_id,
@@ -170,11 +181,16 @@ class SecretsScanner:
                 from dockerdna.utils.patterns import shannon_entropy
 
                 score = round(shannon_entropy(token), 3)
+                content = (
+                    line[: m.start(1)] + value + line[m.end(1) :]
+                    if self.redact
+                    else line
+                )
                 results.append(
                     SecretFinding(
                         file=filepath,
                         line_number=lineno,
-                        line_content=line,
+                        line_content=content,
                         secret_type="High-Entropy String",
                         severity="HIGH",
                         cis_id="CIS-4.10",
@@ -190,6 +206,4 @@ class SecretsScanner:
 
     @staticmethod
     def _redact(value: str) -> str:
-        if len(value) <= 8:
-            return "****"
-        return value[:4] + "****" + value[-4:]
+        return redact_value(value)

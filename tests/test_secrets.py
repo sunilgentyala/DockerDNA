@@ -93,3 +93,23 @@ class TestRedaction:
         for f in findings:
             if "AWS" in f.secret_type or "Key" in f.secret_type:
                 assert "AKIA" in f.matched_value
+
+    def test_redaction_covers_line_content_not_just_matched_value(self):
+        # Regression test: matched_value used to be redacted while
+        # line_content (which report.json serialises verbatim as "content")
+        # still carried the raw secret, defeating redact=True entirely.
+        scanner = SecretsScanner(redact=True)
+        findings = _scan_text(scanner, "AWS_KEY=AKIAIOSFODNN7EXAMPLE\n")
+        assert findings
+        for f in findings:
+            assert "AKIAIOSFODNN7EXAMPLE" not in f.line_content
+            assert "AKIAIOSFODNN7EXAMPLE" not in f.to_dict()["content"]
+
+    def test_redaction_covers_entropy_line_content(self):
+        scanner = SecretsScanner(redact=True)
+        token = "xK9mP2qW8nL5vR3tY7hJ4bF6cN1aS0eD9zQ2"
+        findings = _scan_text(scanner, f"RANDOM_TOKEN={token}\n")
+        entropy_findings = [f for f in findings if f.detection_method == "entropy"]
+        for f in entropy_findings:
+            assert token not in f.line_content
+            assert token not in f.to_dict()["content"]

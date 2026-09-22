@@ -17,6 +17,12 @@ from pathlib import Path
 from dockerdna.utils.patterns import (
     CIS_RULE_MAP,
     UNNECESSARY_PACKAGES,
+    redact_value,
+)
+
+_ENV_SECRET_RE = re.compile(
+    r"(?i)(?P<key>password|secret|api_key|token|private_key|access_key)"
+    r"\s*[=:]?\s*(?P<value>\S+)"
 )
 
 
@@ -59,6 +65,9 @@ class DockerfileFinding:
 
 class DockerfileScanner:
     """Parse and security-audit a Dockerfile; produce CIS-tagged findings."""
+
+    def __init__(self, redact: bool = True):
+        self.redact = redact
 
     def scan(self, path: str | Path) -> tuple[list[Layer], list[DockerfileFinding]]:
         path = Path(path)
@@ -195,15 +204,22 @@ class DockerfileScanner:
 
             # CIS-4.9 — secrets in ENV
             if instr in ("ENV", "ARG"):
-                if re.search(
-                    r"(?i)(password|secret|api_key|token|private_key|access_key)\s*[=:]?\s*\S+",
-                    args,
-                ):
+                match = _ENV_SECRET_RE.search(args)
+                if match:
+                    # Never splice the raw match into `detail` — it flows
+                    # unredacted into every report format (JSON/HTML/SARIF)
+                    # since this scanner has no redaction gate otherwise.
+                    shown = (
+                        redact_value(match.group("value"))
+                        if self.redact
+                        else match.group("value")
+                    )
                     findings.append(
                         self._finding(
                             layer,
                             "env_secret",
-                            f"{instr} instruction may contain sensitive data: {args[:60]}",
+                            f"{instr} instruction may contain sensitive data "
+                            f"('{match.group('key')}'): {shown}",
                         )
                     )
 

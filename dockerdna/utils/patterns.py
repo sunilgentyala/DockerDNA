@@ -122,6 +122,17 @@ def is_high_entropy_secret(token: str) -> bool:
     return shannon_entropy(token) >= ENTROPY_THRESHOLD
 
 
+def redact_value(value: str) -> str:
+    """Mask a secret value, keeping a few boundary characters for identification.
+
+    Shared by every scanner/report path that may render a matched secret, so
+    a single redaction rule governs all of them.
+    """
+    if len(value) <= 8:
+        return "****"
+    return value[:4] + "****" + value[-4:]
+
+
 # ---------------------------------------------------------------------------
 # CIS Docker Benchmark v1.6 rules
 # ---------------------------------------------------------------------------

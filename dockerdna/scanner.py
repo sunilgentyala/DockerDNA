@@ -77,7 +77,7 @@ def scan(
     # ------------------------------------------------------------------ #
     secrets_scanner = SecretsScanner(redact=redact_secrets)
     compose_scanner = ComposeScanner()
-    dockerfile_scanner = DockerfileScanner()
+    dockerfile_scanner = DockerfileScanner(redact=redact_secrets)
     supply_chain_scanner = SupplyChainScanner()
     compliance_mapper = ComplianceMapper()
 
