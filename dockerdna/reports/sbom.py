@@ -160,7 +160,7 @@ def generate_cyclonedx(
                 {
                     "vendor": "DockerDNA",
                     "name": "DockerDNA SBOM Generator",
-                    "version": "1.0.2",
+                    "version": "1.0.3",
                 }
             ],
             "component": {

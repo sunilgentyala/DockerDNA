@@ -924,11 +924,11 @@
     <div class="install-card">
       <div class="install-header"><span style="color:#58a6ff">&#9679;</span> 1. Install</div>
       <div class="install-body">
-        <pre>pip install git+https://github.com/sunilgentyala/DockerDNA.git
+        <pre>pip install dockerdna
 
 # With AI remediation
-pip install "dockerdna[ai] @ git+https://github.com/sunilgentyala/DockerDNA.git"</pre>
-        <div class="install-note">Requires Python 3.11+. PyYAML is the only non-stdlib dependency for core scanning. Not on PyPI yet &mdash; installs from source for now.</div>
+pip install "dockerdna[ai]"</pre>
+        <div class="install-note">Requires Python 3.11+. PyYAML is the only non-stdlib dependency for core scanning.</div>
       </div>
     </div>
 
@@ -970,7 +970,7 @@ dockerdna Dockerfile \
     <div class="install-header"><span style="color:#2dd4bf">&#9679;</span> .github/workflows/security.yml</div>
     <div class="install-body">
       <pre>- uses: actions/checkout@v4
-- run: pip install git+https://github.com/sunilgentyala/DockerDNA.git
+- run: pip install dockerdna
 
 - name: Run DockerDNA
   run: |

@@ -89,8 +89,7 @@ Parses every package install instruction (`apt-get`, `pip`, `npm`, `apk`, `yum`)
 ## Quick Start
 
 ```bash
-# Not on PyPI yet — install from source for now
-pip install git+https://github.com/sunilgentyala/DockerDNA.git
+pip install dockerdna
 
 # Scan a Dockerfile
 dockerdna Dockerfile
@@ -131,7 +130,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: pip install git+https://github.com/sunilgentyala/DockerDNA.git
+      - run: pip install dockerdna
 
       - name: Run DockerDNA
         run: |
@@ -215,11 +214,11 @@ DockerDNA is a good complement for pre-build compose/secrets/compliance analysis
 ## Installation
 
 ```bash
-# Core (no AI) — not on PyPI yet, install from source
-pip install git+https://github.com/sunilgentyala/DockerDNA.git
+# Core (no AI)
+pip install dockerdna
 
 # With AI remediation
-pip install "dockerdna[ai] @ git+https://github.com/sunilgentyala/DockerDNA.git"
+pip install "dockerdna[ai]"
 
 # Development
 git clone https://github.com/sunilgentyala/DockerDNA.git
