@@ -61,11 +61,12 @@ Audits docker-compose files and maps every finding to a specific CIS Docker Benc
 
 ### 3. CIS Docker Benchmark v1.6 Compliance Report
 
-Every finding is tagged with its CIS control ID. A full scorecard is generated:
+Every finding is tagged with its CIS control ID. A full scorecard is generated — real output
+from `examples/Dockerfile.secure` + `examples/docker-compose.secure.yml`:
 
 ```
-CIS Controls: 14 passed / 8 failed / 2 not-checked
-Compliance Score: 63.6%
+CIS Controls: 19 passed / 1 failed / 4 not-checked
+Compliance Score: 95.0%
 ```
 
 ### 4. Supply Chain Risk Scoring
