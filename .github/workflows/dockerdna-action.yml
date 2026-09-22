@@ -41,7 +41,8 @@ jobs:
           python-version: "3.12"
 
       - name: Install DockerDNA
-        run: pip install dockerdna
+        # TODO: switch to `pip install dockerdna` once the package is published to PyPI.
+        run: pip install git+https://github.com/sunilgentyala/DockerDNA.git
 
       - name: Run DockerDNA scan
         id: scan

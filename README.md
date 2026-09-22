@@ -85,7 +85,8 @@ Parses every package install instruction (`apt-get`, `pip`, `npm`, `apk`, `yum`)
 ## Quick Start
 
 ```bash
-pip install dockerdna
+# Not on PyPI yet — install from source for now
+pip install git+https://github.com/sunilgentyala/DockerDNA.git
 
 # Scan a Dockerfile
 dockerdna Dockerfile
@@ -126,7 +127,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: pip install dockerdna
+      - run: pip install git+https://github.com/sunilgentyala/DockerDNA.git
 
       - name: Run DockerDNA
         run: |
@@ -202,14 +203,16 @@ DockSec is an excellent tool for wrapping Trivy + Hadolint with AI explanations.
 ## Installation
 
 ```bash
-# Core (no AI)
-pip install dockerdna
+# Core (no AI) — not on PyPI yet, install from source
+pip install git+https://github.com/sunilgentyala/DockerDNA.git
 
 # With AI remediation
-pip install "dockerdna[ai]"
+pip install "dockerdna[ai] @ git+https://github.com/sunilgentyala/DockerDNA.git"
 
 # Development
-pip install "dockerdna[dev]"
+git clone https://github.com/sunilgentyala/DockerDNA.git
+cd DockerDNA
+pip install -e ".[dev]"
 pytest
 ```
 
