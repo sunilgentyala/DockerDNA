@@ -37,7 +37,7 @@ def generate_json_report(
 
     return {
         "tool": "DockerDNA",
-        "version": "1.0.5",
+        "version": "1.0.6",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "metadata": metadata,
         "summary": {

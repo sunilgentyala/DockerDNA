@@ -3,6 +3,8 @@
 **Layer-by-Layer Container Security DNA Analysis**
 
 [![CI](https://github.com/sunilgentyala/DockerDNA/actions/workflows/ci.yml/badge.svg)](https://github.com/sunilgentyala/DockerDNA/actions)
+[![PyPI](https://img.shields.io/pypi/v/dockerdna.svg)](https://pypi.org/project/dockerdna/)
+[![Downloads](https://img.shields.io/pypi/dm/dockerdna.svg)](https://pypi.org/project/dockerdna/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CIS Docker Benchmark](https://img.shields.io/badge/CIS-Docker%20Benchmark%20v1.6-orange)](https://www.cisecurity.org/benchmark/docker)
@@ -88,6 +90,8 @@ Parses every package install instruction (`apt-get`, `pip`, `npm`, `apk`, `yum`)
 ---
 
 ## Quick Start
+
+**[View on PyPI](https://pypi.org/project/dockerdna/)**
 
 ```bash
 pip install dockerdna
