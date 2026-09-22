@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CIS Docker Benchmark](https://img.shields.io/badge/CIS-Docker%20Benchmark%20v1.6-orange)](https://www.cisecurity.org/benchmark/docker)
 
-DockerDNA is an open-source container security scanner focused on **pre-build analysis**: layer-by-layer Dockerfile attribution, docker-compose.yml auditing, CIS-mapped findings, dual-mode secret detection (regex + Shannon entropy), supply-chain risk scoring, SARIF, and CycloneDX output. It's designed to complement tools like [OWASP DockSec], Trivy, and Hadolint, not replace them.
+DockerDNA is an open-source container security scanner focused on **pre-build analysis**: layer-by-layer Dockerfile attribution, docker-compose.yml auditing, CIS-mapped findings, dual-mode secret detection (regex + Shannon entropy), supply-chain risk scoring, SARIF, and CycloneDX output. It's designed to complement tools like OWASP DockSec, Trivy, and Hadolint, not replace them.
 
 ---
 
