@@ -250,6 +250,24 @@ changed and what's on the roadmap, and [SECURITY.md](SECURITY.md) to report a vu
 (please don't file those as a public issue). This project follows the
 [Contributor Covenant](CODE_OF_CONDUCT.md).
 
+## How to Cite
+
+If you use DockerDNA in your research, please cite the software:
+
+```bibtex
+@software{gentyala2026dockerdna,
+  author    = {Gentyala, Sunil},
+  title     = {DockerDNA},
+  year      = {2026},
+  version   = {1.0.6},
+  url       = {https://github.com/sunilgentyala/DockerDNA}
+}
+```
+
+Machine-readable metadata is in [`CITATION.cff`](CITATION.cff); GitHub shows it under "Cite this repository".
+
+---
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).

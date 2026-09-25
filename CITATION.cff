@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: If you use this software in your research, please cite it as below.
+type: software
+title: DockerDNA
+version: 1.0.6
+date-released: '2026-09-22'
+authors:
+- family-names: Gentyala
+  given-names: Sunil
+  affiliation: HCLTech (HCL America Inc.), Dallas, TX, USA
+  orcid: https://orcid.org/0009-0005-2642-3479
+  email: sunil.gentyala@ieee.org
+repository-code: https://github.com/sunilgentyala/DockerDNA
+url: https://sunilgentyala.github.io/DockerDNA/
+license: MIT
+abstract: 'Layer-by-Layer Container Security DNA Analysis: secrets detection, docker-compose
+  scanning, CIS Docker Benchmark compliance, SBOM (CycloneDX), and SARIF output.'
+keywords:
+- cis-benchmark
+- container-security
+- cyclonedx
+- devsecops
+- docker-security
+- python
+- sarif
+- sbom
+- secrets-detection
+- supply-chain-security
