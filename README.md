@@ -117,6 +117,10 @@ dockerdna Dockerfile --compose docker-compose.yml --ai
 
 Output is written to `./dockerdna-results/` by default.
 
+![DockerDNA scanning a Dockerfile with a hardcoded AWS key and a root user](docs/demo.gif)
+
+<sub>Replay of the real output of `dockerdna Dockerfile` (v1.0.7) on a deliberately insecure sample Dockerfile, rendered from captured terminal output (not a live screen recording). The key in the sample is AWS's public documentation example.</sub>
+
 ---
 
 ## GitHub Actions Integration
