@@ -3,6 +3,17 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.7]
+
+### Fixed
+
+- **Secret findings printed with an empty message in the terminal summary.** `_print_summary` read
+  `detail` or `description`, but the secrets scanner stores `type` and `matched_value`, so every
+  hardcoded-secret finding showed as `[CRITICAL] CIS-4.10 [Dockerfile]: ` with nothing after the colon.
+  The summary now shows the secret type, line number and (redacted) value. Regression test added.
+- Replaced em dashes in printed scanner messages with plain hyphens; they rendered as `?` or
+  mojibake on consoles that are not UTF-8 (default Windows terminals).
+
 ## [1.0.5]
 
 ### Fixed

@@ -14,7 +14,7 @@ from typing import Any
 _TOOL = {
     "driver": {
         "name": "DockerDNA",
-        "version": "1.0.6",
+        "version": "1.0.7",
         "informationUri": "https://github.com/sunilgentyala/DockerDNA",
         "rules": [],
     }
@@ -112,7 +112,7 @@ def generate_sarif(
             )
             _add_result(
                 rule_id,
-                f"Risk score {f.risk_score}/100 — {'; '.join(f.factors)}",
+                f"Risk score {f.risk_score}/100 - {'; '.join(f.factors)}",
                 "Dockerfile",
                 1,
                 f.severity,

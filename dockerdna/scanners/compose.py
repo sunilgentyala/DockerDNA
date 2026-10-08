@@ -1,7 +1,7 @@
 """
 docker-compose.yml security scanner.
 
-Audits runtime configuration in docker-compose files — catching
+Audits runtime configuration in docker-compose files - catching
 misconfigurations (privileged mode, socket mounts, missing resource
 limits, host networking) that never appear in a Dockerfile-only scan.
 
@@ -78,11 +78,11 @@ class ComposeScanner:
     def _audit_service(self, name: str, cfg: dict) -> list[ComposeFinding]:
         findings: list[ComposeFinding] = []
 
-        # CIS-5.4 — privileged
+        # CIS-5.4 - privileged
         if cfg.get("privileged") is True:
             findings.append(self._make(name, "privileged", "Privileged mode enabled"))
 
-        # CIS-5.3 — cap_add: [ALL] or dangerous caps
+        # CIS-5.3 - cap_add: [ALL] or dangerous caps
         cap_add = cfg.get("cap_add", []) or []
         dangerous = {"ALL", "SYS_ADMIN", "NET_ADMIN", "SYS_PTRACE", "SYS_MODULE"}
         bad_caps = [c for c in cap_add if str(c).upper() in dangerous]
@@ -95,7 +95,7 @@ class ComposeScanner:
                 )
             )
 
-        # CIS-5.13 — Docker socket mount
+        # CIS-5.13 - Docker socket mount
         volumes = cfg.get("volumes", []) or []
         for vol in volumes:
             src = self._vol_source(vol)
@@ -104,7 +104,7 @@ class ComposeScanner:
                     self._make(name, "docker_socket", f"Docker socket mounted: {src}")
                 )
 
-        # CIS-5.5 — sensitive filesystem mounts
+        # CIS-5.5 - sensitive filesystem mounts
         for vol in volumes:
             src = self._vol_source(vol)
             if src and any(
@@ -118,12 +118,12 @@ class ComposeScanner:
                     )
                 )
 
-        # CIS-5.9 — host network
+        # CIS-5.9 - host network
         net_mode = cfg.get("network_mode", "") or ""
         if str(net_mode).lower() == "host":
             findings.append(self._make(name, "host_network", "network_mode: host"))
 
-        # CIS-5.10 — memory limit
+        # CIS-5.10 - memory limit
         deploy = cfg.get("deploy", {}) or {}
         resources = deploy.get("resources", {}) or {}
         limits = resources.get("limits", {}) or {}
@@ -134,19 +134,19 @@ class ComposeScanner:
                 self._make(name, "no_memory_limit", "No memory limit defined")
             )
 
-        # CIS-5.11 — CPU limit
+        # CIS-5.11 - CPU limit
         has_cpu_deploy = bool(limits.get("cpus"))
         has_cpu_old = bool(cfg.get("cpus") or cfg.get("cpu_shares"))
         if not has_cpu_deploy and not has_cpu_old:
             findings.append(self._make(name, "no_cpu_limit", "No CPU limit defined"))
 
-        # CIS-5.12 — read-only root filesystem
+        # CIS-5.12 - read-only root filesystem
         if not cfg.get("read_only"):
             findings.append(
                 self._make(name, "no_readonly_fs", "read_only not set to true")
             )
 
-        # CIS-5.14 — no-new-privileges
+        # CIS-5.14 - no-new-privileges
         sec_opts = cfg.get("security_opt", []) or []
         has_nnp = any("no-new-privileges" in str(o) for o in sec_opts)
         if not has_nnp:
@@ -156,7 +156,7 @@ class ComposeScanner:
                 )
             )
 
-        # CIS-5.7 — privileged ports (< 1024) published to host
+        # CIS-5.7 - privileged ports (< 1024) published to host
         ports = cfg.get("ports", []) or []
         for port_entry in ports:
             host_port = self._host_port(port_entry)
@@ -169,14 +169,14 @@ class ComposeScanner:
                     )
                 )
 
-        # CIS-5.1 — no AppArmor profile
+        # CIS-5.1 - no AppArmor profile
         has_apparmor = any("apparmor" in str(o).lower() for o in sec_opts)
         if not has_apparmor:
             findings.append(
                 self._make(name, "no_apparmor", "No AppArmor security profile defined")
             )
 
-        # CIS-4.6 — healthcheck
+        # CIS-4.6 - healthcheck
         if not cfg.get("healthcheck"):
             findings.append(
                 self._make(name, "no_healthcheck", "No healthcheck defined")

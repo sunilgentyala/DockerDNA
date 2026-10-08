@@ -61,7 +61,16 @@ def _print_summary(report: dict) -> None:
         for f in critical_high[:10]:
             sev = f.get("severity", "")
             cis = f.get("cis_id", "")
-            msg = f.get("detail") or f.get("description") or str(f.get("factors", ""))
+            msg = (
+                f.get("detail")
+                or f.get("description")
+                or (
+                    f"{f['type']} (line {f.get('line', '?')}): {f.get('matched_value', '')}"
+                    if f.get("type")
+                    else ""
+                )
+                or str(f.get("factors", ""))
+            )
             svc = f.get("service", "") or f.get("file", "")
             loc = f" [{svc}]" if svc else ""
             print(f"  [{sev}] {cis}{loc}: {msg[:90]}")
@@ -73,7 +82,7 @@ def _print_summary(report: dict) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="dockerdna",
-        description="DockerDNA — Layer-by-Layer Container Security DNA Analysis",
+        description="DockerDNA - Layer-by-Layer Container Security DNA Analysis",
     )
     parser.add_argument(
         "dockerfile",

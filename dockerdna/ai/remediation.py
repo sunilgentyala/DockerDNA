@@ -49,7 +49,7 @@ def _build_context(
         parts.append("\n=== Supply Chain Risks ===")
         for f in supply_chain_findings:
             parts.append(
-                f"[{f.severity}] {f.image} — risk score {f.risk_score}/100: "
+                f"[{f.severity}] {f.image} - risk score {f.risk_score}/100: "
                 + "; ".join(f.factors)
             )
 

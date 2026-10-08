@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: If you use this software in your research, please cite it as below.
 type: software
 title: DockerDNA
-version: 1.0.6
+version: 1.0.7
 date-released: '2026-09-22'
 authors:
 - family-names: Gentyala

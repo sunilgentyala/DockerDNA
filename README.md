@@ -259,7 +259,7 @@ If you use DockerDNA in your research, please cite the software:
   author    = {Gentyala, Sunil},
   title     = {DockerDNA},
   year      = {2026},
-  version   = {1.0.6},
+  version   = {1.0.7},
   url       = {https://github.com/sunilgentyala/DockerDNA}
 }
 ```

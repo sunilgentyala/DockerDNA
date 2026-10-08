@@ -125,11 +125,11 @@ class SupplyChainScanner:
         elif ref.count("/") == 1:
             # Docker Hub community image (user/image)
             score += 15
-            factors.append("Docker Hub community image — verify publisher identity")
+            factors.append("Docker Hub community image - verify publisher identity")
         else:
             # Third-party registry
             score += 10
-            factors.append("Third-party registry — check signing and provenance")
+            factors.append("Third-party registry - check signing and provenance")
 
         # 2. Tag specificity
         if "@sha256:" in ref:
@@ -137,7 +137,7 @@ class SupplyChainScanner:
             factors.append("Digest-pinned (best practice)")
         elif ":" not in ref or ":latest" in ref:
             score += 25
-            factors.append(":latest tag or no tag — non-deterministic builds")
+            factors.append(":latest tag or no tag - non-deterministic builds")
         else:
             score += 5
             factors.append("Version tag without digest pin")
@@ -159,7 +159,7 @@ class SupplyChainScanner:
         name_part = ref.split("/")[-1].split(":")[0].split("@")[0]
         if len(name_part) < 3:
             score += 5
-            factors.append("Very short image name — verify it is intentional")
+            factors.append("Very short image name - verify it is intentional")
 
         score = min(score, 100)
 

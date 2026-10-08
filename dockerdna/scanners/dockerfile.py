@@ -149,7 +149,7 @@ class DockerfileScanner:
             instr = layer.instruction
             args = layer.arguments
 
-            # CIS-4.2 — latest tag
+            # CIS-4.2 - latest tag
             if instr == "FROM" and (
                 ":latest" in args.lower() or "@" not in args and ":" not in args
             ):
@@ -167,7 +167,7 @@ class DockerfileScanner:
                 stage = layer.stage
                 stages_with_from.setdefault(stage, []).append(args)
 
-            # CIS-4.7 — update without install in same RUN
+            # CIS-4.7 - update without install in same RUN
             if instr == "RUN":
                 if re.search(r"\bapt-get\s+update\b", args) and not re.search(
                     r"\bapt-get\s+install\b", args
@@ -180,7 +180,7 @@ class DockerfileScanner:
                         )
                     )
 
-            # CIS-4.3 — unnecessary packages
+            # CIS-4.3 - unnecessary packages
             if instr == "RUN":
                 for pkg in UNNECESSARY_PACKAGES:
                     if re.search(r"\b" + re.escape(pkg) + r"\b", args):
@@ -192,7 +192,7 @@ class DockerfileScanner:
                             )
                         )
 
-            # CIS-5.6 — SSH server in container
+            # CIS-5.6 - SSH server in container
             if instr == "RUN" and re.search(r"\bopenssh-server\b|\bsshd\b", args):
                 findings.append(
                     self._finding(
@@ -202,11 +202,11 @@ class DockerfileScanner:
                     )
                 )
 
-            # CIS-4.9 — secrets in ENV
+            # CIS-4.9 - secrets in ENV
             if instr in ("ENV", "ARG"):
                 match = _ENV_SECRET_RE.search(args)
                 if match:
-                    # Never splice the raw match into `detail` — it flows
+                    # Never splice the raw match into `detail` - it flows
                     # unredacted into every report format (JSON/HTML/SARIF)
                     # since this scanner has no redaction gate otherwise.
                     shown = (
@@ -229,7 +229,7 @@ class DockerfileScanner:
                     self._finding(
                         layer,
                         "excess_capabilities",
-                        "sudo installed or used — consider dropping all capabilities",
+                        "sudo installed or used - consider dropping all capabilities",
                     )
                 )
 
@@ -240,7 +240,7 @@ class DockerfileScanner:
                         self._finding(
                             layer,
                             "sensitive_mount",
-                            "ADD used with a URL — use RUN curl/wget with checksum verification",
+                            "ADD used with a URL - use RUN curl/wget with checksum verification",
                         )
                     )
 
@@ -251,7 +251,7 @@ class DockerfileScanner:
                     self._finding(
                         layers[-1],
                         "no_user",
-                        "No non-root USER instruction found — container will run as root",
+                        "No non-root USER instruction found - container will run as root",
                     )
                 )
 
