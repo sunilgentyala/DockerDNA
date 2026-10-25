@@ -55,6 +55,8 @@ class SecretFinding:
         }
 
 
+_MAX_SCAN_BYTES = 2 * 1024 * 1024
+
 # Token extractor: grab quoted and unquoted values from assignment-style lines
 _ASSIGNMENT_VALUE = re.compile(r"(?:=|:\s*)\"?([A-Za-z0-9+/!@#$%^&*()\-_=.]{20,})\"?")
 
@@ -77,6 +79,7 @@ class SecretsScanner:
 
     def __init__(self, redact: bool = True):
         self.redact = redact
+        self.errors: list[str] = []
         self._compiled = [
             (name, re.compile(pattern, re.MULTILINE), sev, cis)
             for name, pattern, sev, cis in SECRET_PATTERNS
@@ -89,10 +92,12 @@ class SecretsScanner:
     def scan_file(self, path: str | Path) -> list[SecretFinding]:
         path = Path(path)
         if not path.exists():
+            self.errors.append(f"{path}: file not found")
             return []
         try:
             lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-        except Exception:
+        except Exception as exc:
+            self.errors.append(f"{path}: cannot read file ({type(exc).__name__})")
             return []
         findings: list[SecretFinding] = []
         for lineno, line in enumerate(lines, start=1):
@@ -121,6 +126,15 @@ class SecretsScanner:
             ]
             for fname in files:
                 fpath = Path(root) / fname
+                if fpath.is_symlink():
+                    continue
+                try:
+                    if fpath.stat().st_size > _MAX_SCAN_BYTES:
+                        self.errors.append(f"{fpath}: skipped, larger than 2 MiB")
+                        continue
+                except OSError as exc:
+                    self.errors.append(f"{fpath}: cannot stat ({type(exc).__name__})")
+                    continue
                 if fpath.suffix.lower() in extensions or fname in (
                     "Dockerfile",
                     ".env",

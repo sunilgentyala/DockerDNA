@@ -19,6 +19,11 @@ on:
         required: false
         default: "HIGH"
         type: string
+      version:
+        description: "DockerDNA version to install (pinned for reproducibility)"
+        required: false
+        default: "1.0.8"
+        type: string
       formats:
         description: "Output formats (space-separated: json html sarif sbom)"
         required: false
@@ -34,14 +39,16 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: "3.12"
 
       - name: Install DockerDNA
-        run: pip install dockerdna
+        run: pip install "dockerdna==${DD_VERSION}"
+        env:
+          DD_VERSION: ${{ inputs.version }}
 
       - name: Run DockerDNA scan
         id: scan
@@ -50,25 +57,33 @@ jobs:
         # step, and therefore the job, fails and blocks the PR. The upload
         # steps below use `if: always()` so reports still get published even
         # when the scan step fails the job.
+        # Inputs are passed through env, never interpolated into the script, so a
+        # caller-controlled value cannot inject shell commands.
+        env:
+          DD_DOCKERFILE: ${{ inputs.dockerfile }}
+          DD_COMPOSE: ${{ inputs.compose_file }}
+          DD_THRESHOLD: ${{ inputs.threshold }}
+          DD_FORMATS: ${{ inputs.formats }}
         run: |
-          COMPOSE_ARG=""
-          if [ -n "${{ inputs.compose_file }}" ] && [ -f "${{ inputs.compose_file }}" ]; then
-            COMPOSE_ARG="--compose ${{ inputs.compose_file }}"
+          case "$DD_THRESHOLD" in CRITICAL|HIGH|MEDIUM|LOW) ;; *) echo "invalid threshold" >&2; exit 2 ;; esac
+          read -r -a FORMATS <<< "$DD_FORMATS"
+          for f in "${FORMATS[@]}"; do
+            case "$f" in json|html|sarif|sbom) ;; *) echo "invalid format: $f" >&2; exit 2 ;; esac
+          done
+          ARGS=("$DD_DOCKERFILE" --format "${FORMATS[@]}" --threshold "$DD_THRESHOLD" --strict --output dockerdna-results)
+          if [ -n "$DD_COMPOSE" ]; then
+            ARGS+=(--compose "$DD_COMPOSE")
           fi
-          dockerdna ${{ inputs.dockerfile }} \
-            $COMPOSE_ARG \
-            --format ${{ inputs.formats }} \
-            --threshold ${{ inputs.threshold }} \
-            --output dockerdna-results
+          dockerdna "${ARGS[@]}"
 
       - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v4
-        if: always() && contains(inputs.formats, 'sarif')
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370  # v4
+        if: always() && contains(inputs.formats, 'sarif') && hashFiles('dockerdna-results/report.sarif') != ''
         with:
           sarif_file: dockerdna-results/report.sarif
 
       - name: Upload scan report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         if: always()
         with:
           name: dockerdna-security-report

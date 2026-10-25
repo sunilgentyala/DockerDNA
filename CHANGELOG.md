@@ -3,6 +3,27 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.8]
+
+### Security
+
+- **Scans now fail closed.** Missing, unreadable, or unparseable inputs (including invalid compose
+  YAML and a missing PyYAML) used to return an empty list and a clean score. They are now listed
+  in `report["scan_errors"]` and warned on stderr. A nonexistent explicit path exits 2, and
+  `--strict` (implied by `--threshold`) exits 2 when any file could not be fully scanned.
+- **`--ai` no longer sends raw file contents to the API.** Dockerfile and compose text is passed
+  through the secret scanner and key-name masking before it is placed in the prompt.
+- **Reusable workflow script injection fixed.** `dockerfile`, `compose_file`, `threshold` and
+  `formats` inputs are passed via `env:` and validated instead of being interpolated into the shell.
+- All GitHub Actions are pinned to commit SHAs, `ci.yml` has least-privilege `permissions`, and the
+  reusable workflow installs a pinned `dockerdna` version (new `version` input).
+
+### Fixed
+
+- Compose `privileged: "true"` (string spelling) was missed; any truthy compose spelling now matches.
+- Compose services with `user: root` / `user: 0` are now flagged (CIS-4.1).
+- Directory secret scan skips symlinks and files over 2 MiB (reported in `scan_errors`).
+
 ## [1.0.7]
 
 ### Fixed

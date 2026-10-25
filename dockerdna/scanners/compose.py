@@ -47,22 +47,46 @@ class ComposeFinding:
         }
 
 
+_TRUE_STRINGS = {"true", "yes", "on", "1"}
+
+
+def _truthy(value: Any) -> bool:
+    """Compose accepts booleans and their string spellings ("true", "yes", ...)."""
+    if isinstance(value, str):
+        return value.strip().lower() in _TRUE_STRINGS
+    return value is True or value == 1
+
+
 class ComposeScanner:
-    """Parse and security-audit docker-compose files."""
+    """Parse and security-audit docker-compose files.
+
+    Anything that stops a file from being fully analysed (missing file,
+    unreadable, invalid YAML, PyYAML absent) is recorded in ``self.errors``
+    rather than silently producing an empty, clean-looking result.
+    """
+
+    def __init__(self) -> None:
+        self.errors: list[str] = []
 
     def scan(self, path: str | Path) -> list[ComposeFinding]:
         path = Path(path)
         if not path.exists():
+            self.errors.append(f"{path}: compose file not found")
             return []
         if yaml is None:
+            self.errors.append(f"{path}: PyYAML is not installed, compose not scanned")
             return []
         try:
             raw = path.read_text(encoding="utf-8", errors="replace")
             doc = yaml.safe_load(raw)
-        except Exception:
+        except Exception as exc:
+            self.errors.append(
+                f"{path}: cannot parse compose file ({type(exc).__name__})"
+            )
             return []
 
         if not isinstance(doc, dict):
+            self.errors.append(f"{path}: compose file is not a YAML mapping")
             return []
 
         services = doc.get("services", {}) or {}
@@ -79,8 +103,17 @@ class ComposeScanner:
         findings: list[ComposeFinding] = []
 
         # CIS-5.4 - privileged
-        if cfg.get("privileged") is True:
+        if _truthy(cfg.get("privileged")):
             findings.append(self._make(name, "privileged", "Privileged mode enabled"))
+
+        # Service runs as root explicitly
+        svc_user = str(cfg.get("user", "") or "").strip().split(":")[0]
+        if svc_user in ("root", "0"):
+            findings.append(
+                self._make(
+                    name, "no_user", f"Service runs as root (user: {cfg.get('user')})"
+                )
+            )
 
         # CIS-5.3 - cap_add: [ALL] or dangerous caps
         cap_add = cfg.get("cap_add", []) or []

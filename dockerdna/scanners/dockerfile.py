@@ -68,14 +68,17 @@ class DockerfileScanner:
 
     def __init__(self, redact: bool = True):
         self.redact = redact
+        self.errors: list[str] = []
 
     def scan(self, path: str | Path) -> tuple[list[Layer], list[DockerfileFinding]]:
         path = Path(path)
         if not path.exists():
+            self.errors.append(f"{path}: Dockerfile not found")
             return [], []
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
-        except Exception:
+        except Exception as exc:
+            self.errors.append(f"{path}: cannot read Dockerfile ({type(exc).__name__})")
             return [], []
 
         layers = self._parse_layers(text)
