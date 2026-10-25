@@ -26,6 +26,19 @@ _ENV_SECRET_RE = re.compile(
 )
 
 
+_PIPE_TO_SHELL_RE = re.compile(r"\b(curl|wget)\b[^|;&]*\|\s*(sudo\s+)?(ba|z|da|k)?sh\b")
+_INSECURE_DOWNLOAD_RE = re.compile(
+    r"--no-check-certificate|\bcurl\b[^|;&]*\s(-k|--insecure)\b"
+    r"|--trusted-host|strict-ssl\s+false|GIT_SSL_NO_VERIFY|sslverify\s*=?\s*false",
+    re.IGNORECASE,
+)
+_CHMOD_777_RE = re.compile(r"\bchmod\s+(-\w+\s+)*(a\+rwx|0?777)\b")
+_RUN_SECRET_RE = re.compile(
+    r"(?i)(?P<key>password|passwd|secret|api_?key|token|private_?key)\w*"
+    r"\s*[=:]\s*(?P<value>\"[^\"$]{4,}\"|'[^'$]{4,}'|[^\s\"'$]{4,})"
+)
+
+
 @dataclass
 class Layer:
     index: int
@@ -195,6 +208,9 @@ class DockerfileScanner:
                             )
                         )
 
+            if instr == "RUN":
+                findings.extend(self._audit_run(layer))
+
             # CIS-5.6 - SSH server in container
             if instr == "RUN" and re.search(r"\bopenssh-server\b|\bsshd\b", args):
                 findings.append(
@@ -270,6 +286,53 @@ class DockerfileScanner:
         findings.extend(self._check_secret_leak_between_stages(layers))
 
         return findings
+
+    def _audit_run(self, layer: Layer) -> list[DockerfileFinding]:
+        args = layer.arguments
+        out: list[DockerfileFinding] = []
+        if _PIPE_TO_SHELL_RE.search(args):
+            out.append(
+                self._finding(
+                    layer, "pipe_to_shell", "Remote content is piped into a shell"
+                )
+            )
+        if _INSECURE_DOWNLOAD_RE.search(args):
+            out.append(
+                self._finding(
+                    layer,
+                    "insecure_download",
+                    "TLS certificate verification is disabled",
+                )
+            )
+        if _CHMOD_777_RE.search(args):
+            out.append(
+                self._finding(
+                    layer, "world_writable", "chmod 777 on a path in the image"
+                )
+            )
+        if (
+            re.search(r"\bapt(-get)?\s+(-\S+\s+)*install\b", args)
+            and "--no-install-recommends" not in args
+        ):
+            out.append(
+                self._finding(
+                    layer,
+                    "apt_recommends",
+                    "apt install without --no-install-recommends",
+                )
+            )
+        m = _RUN_SECRET_RE.search(args)
+        if m:
+            value = m.group("value").strip("\"'")
+            shown = redact_value(value) if self.redact else value
+            out.append(
+                self._finding(
+                    layer,
+                    "secret_in_run",
+                    f"RUN writes a literal value for '{m.group('key')}': {shown}",
+                )
+            )
+        return out
 
     def _check_secret_leak_between_stages(
         self, layers: list[Layer]
