@@ -33,6 +33,7 @@ class ComposeFinding:
     detail: str
     line_hint: Optional[int]
     remediation: str
+    file: str = ""
 
     def to_dict(self) -> dict:
         return {
@@ -43,8 +44,33 @@ class ComposeFinding:
             "severity": self.severity,
             "detail": self.detail,
             "line_hint": self.line_hint,
+            "file": self.file,
             "remediation": self.remediation,
         }
+
+
+# check_key -> compose key the finding points at; checks about a missing
+# setting are anchored to the service line instead.
+_YAML_KEY = {
+    "privileged": "privileged",
+    "excess_capabilities": "cap_add",
+    "docker_socket": "volumes",
+    "sensitive_mount": "volumes",
+    "host_network": "network_mode",
+    "privileged_ports": "ports",
+    "latest_tag": "image",
+    "no_user": "user",
+    "env_secret": "environment",
+}
+
+
+def _node_text(node: Any) -> str:
+    """Flatten a YAML scalar or mapping node to text for needle matching."""
+    if isinstance(node, yaml.ScalarNode):
+        return str(node.value)
+    if isinstance(node, yaml.MappingNode):
+        return " ".join(_node_text(n) for pair in node.value for n in pair)
+    return ""
 
 
 _TRUE_STRINGS = {"true", "yes", "on", "1"}
@@ -69,6 +95,8 @@ class ComposeScanner:
         self.errors: list[str] = []
         self.images: list[tuple[str, str]] = []  # (service, image ref)
         self.env_files: list[Path] = []  # resolved env_file paths
+        self._file = ""
+        self._svc_nodes: dict[str, Any] = {}  # service name -> YAML node
 
     def scan(self, path: str | Path) -> list[ComposeFinding]:
         path = Path(path)
@@ -92,6 +120,8 @@ class ComposeScanner:
             return []
 
         self._base_dir = path.parent
+        self._file = str(path)
+        self._svc_nodes = self._service_nodes(raw)
         services = doc.get("services", {}) or {}
         findings: list[ComposeFinding] = []
         for svc_name, svc_conf in services.items():
@@ -158,7 +188,9 @@ class ComposeScanner:
             src = self._vol_source(vol)
             if src and ("docker.sock" in src):
                 findings.append(
-                    self._make(name, "docker_socket", f"Docker socket mounted: {src}")
+                    self._make(
+                        name, "docker_socket", f"Docker socket mounted: {src}", src
+                    )
                 )
 
         # CIS-5.5 - sensitive filesystem mounts
@@ -171,7 +203,7 @@ class ComposeScanner:
             ):
                 findings.append(
                     self._make(
-                        name, "sensitive_mount", f"Sensitive path mounted: {src}"
+                        name, "sensitive_mount", f"Sensitive path mounted: {src}", src
                     )
                 )
 
@@ -223,6 +255,7 @@ class ComposeScanner:
                         name,
                         "privileged_ports",
                         f"Privileged port exposed: {host_port}",
+                        str(port_entry),
                     )
                 )
 
@@ -272,7 +305,8 @@ class ComposeScanner:
                             ),
                             severity="CRITICAL",
                             detail=f"Possible secret in env var '{k}'",
-                            line_hint=None,
+                            line_hint=self._line(name, "environment", k),
+                            file=self._file,
                             remediation=(
                                 "Use Docker secrets or a .env file excluded from version control. "
                                 "Never hardcode credentials in docker-compose.yml."
@@ -286,7 +320,14 @@ class ComposeScanner:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _make(self, service: str, check_key: str, detail: str) -> ComposeFinding:
+    def _make(
+        self,
+        service: str,
+        check_key: str,
+        detail: str,
+        needle: Optional[str] = None,
+    ) -> ComposeFinding:
+        line = self._line(service, _YAML_KEY.get(check_key), needle)
         rule = CIS_RULE_MAP.get(check_key)
         if rule:
             return ComposeFinding(
@@ -296,8 +337,9 @@ class ComposeScanner:
                 title=rule.title,
                 severity=rule.severity,
                 detail=detail,
-                line_hint=None,
+                line_hint=line,
                 remediation=rule.remediation,
+                file=self._file,
             )
         return ComposeFinding(
             service=service,
@@ -306,9 +348,65 @@ class ComposeScanner:
             title=check_key,
             severity="MEDIUM",
             detail=detail,
-            line_hint=None,
+            line_hint=line,
             remediation="Review the docker-compose configuration.",
+            file=self._file,
         )
+
+    @staticmethod
+    def _service_nodes(raw: str) -> dict[str, Any]:
+        """Map service name -> YAML node so findings can carry real line numbers."""
+        try:
+            root = yaml.compose(raw)
+        except Exception:
+            return {}
+        if not isinstance(root, yaml.MappingNode):
+            return {}
+        for k, v in root.value:
+            if getattr(k, "value", None) == "services" and isinstance(
+                v, yaml.MappingNode
+            ):
+                return {
+                    sk.value: (sk, sv)
+                    for sk, sv in v.value
+                    if isinstance(sk, yaml.ScalarNode)
+                }
+        return {}
+
+    def _line(
+        self, service: str, key: Optional[str], needle: Optional[str] = None
+    ) -> Optional[int]:
+        """1-based line of ``key`` (or of the list item / mapping key matching
+        ``needle``) inside ``service``; falls back to the service's own line."""
+        entry = self._svc_nodes.get(service)
+        if entry is None:
+            return None
+        svc_key, svc_val = entry
+        line = svc_key.start_mark.line + 1
+        if key is None or not isinstance(svc_val, yaml.MappingNode):
+            return line
+        for k, v in svc_val.value:
+            if getattr(k, "value", None) != key:
+                continue
+            line = k.start_mark.line + 1
+            if needle is None:
+                return line
+            if isinstance(v, yaml.SequenceNode):
+                # exact entry first, then "needle:..." (volume source), then substring
+                for match in (
+                    lambda t: t == needle,
+                    lambda t: t.startswith(needle + ":"),
+                    lambda t: needle in t,
+                ):
+                    for item in v.value:
+                        if match(_node_text(item)):
+                            return item.start_mark.line + 1
+            elif isinstance(v, yaml.MappingNode):
+                for ik, _iv in v.value:
+                    if getattr(ik, "value", None) == needle:
+                        return ik.start_mark.line + 1
+            return line
+        return line
 
     @staticmethod
     def _vol_source(vol: Any) -> Optional[str]:
