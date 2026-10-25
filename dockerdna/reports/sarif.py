@@ -87,7 +87,7 @@ def generate_sarif(
         _add_result(
             f.cis_id,
             f"{f.service}: {f.detail}",
-            "docker-compose.yml",
+            getattr(f, "file", "") or "docker-compose.yml",
             f.line_hint or 1,
             f.severity,
         )
