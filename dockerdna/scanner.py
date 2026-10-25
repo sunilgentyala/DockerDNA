@@ -34,13 +34,28 @@ def scan(
     threshold: Optional[str] = None,  # CRITICAL | HIGH | MEDIUM | LOW
     redact_secrets: bool = True,
     verbose: bool = False,
+    strict: bool = False,
 ) -> dict:
     """
     Run all DockerDNA scanners and write reports.
 
     Returns the full report dict. Raises SystemExit with code 1 if
     ``threshold`` is set and findings at that severity or above are found.
+
+    The scan fails closed: an explicitly named file that does not exist raises
+    ``FileNotFoundError``, and any file that could not be fully analysed is
+    listed under ``report["scan_errors"]``. With ``strict`` or ``threshold``
+    set, scan errors exit with code 2 so a broken scan can never pass a gate.
     """
+    for label, given in (("Dockerfile", dockerfile), ("compose file", compose_file)):
+        if given and not Path(given).is_file():
+            raise FileNotFoundError(f"{label} not found: {given}")
+    if scan_directory and not Path(scan_directory).is_dir():
+        raise FileNotFoundError(f"directory not found: {scan_directory}")
+    for ef in extra_files or []:
+        if not Path(ef).is_file():
+            raise FileNotFoundError(f"file not found: {ef}")
+
     if formats is None:
         formats = ["json", "html"]
 
@@ -130,6 +145,10 @@ def scan(
     image_name = Path(dockerfile).stem if dockerfile else "unknown"
     sbom = generate_cyclonedx(components, image_name, dockerfile or "Dockerfile")
 
+    scan_errors = (
+        secrets_scanner.errors + compose_scanner.errors + dockerfile_scanner.errors
+    )
+
     # Metadata
     metadata = {
         "scanned_path": dockerfile or scan_directory or ".",
@@ -154,6 +173,10 @@ def scan(
         sbom,
         metadata,
     )
+
+    report["scan_errors"] = scan_errors
+    for err in scan_errors:
+        print(f"[DockerDNA] WARNING: {err}", file=sys.stderr)
 
     # ------------------------------------------------------------------ #
     # AI remediation (optional)
@@ -215,6 +238,14 @@ def scan(
     # ------------------------------------------------------------------ #
     # Threshold gate (CI/CD)
     # ------------------------------------------------------------------ #
+    if scan_errors and (strict or threshold):
+        print(
+            f"[DockerDNA] ERROR: {len(scan_errors)} file(s) could not be fully "
+            "scanned; refusing to report a clean result.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
     if threshold:
         order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
         threshold_level = order.get(threshold.upper(), 3)

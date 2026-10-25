@@ -147,6 +147,12 @@ def main() -> None:
         help="Do not redact secret values in reports (use with caution)",
     )
     parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit with code 2 if any file could not be fully scanned "
+        "(implied by --threshold)",
+    )
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",
@@ -159,7 +165,16 @@ def main() -> None:
         parser.print_help()
         sys.exit(1)
 
-    report = scan(
+    try:
+        report = _run(args)
+    except FileNotFoundError as exc:
+        print(f"[DockerDNA] ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
+    _finish(args, report)
+
+
+def _run(args: argparse.Namespace) -> dict:
+    return scan(
         dockerfile=args.dockerfile,
         compose_file=args.compose,
         extra_files=args.extra_files,
@@ -171,8 +186,11 @@ def main() -> None:
         threshold=args.threshold,
         redact_secrets=not args.no_redact,
         verbose=args.verbose,
+        strict=args.strict,
     )
 
+
+def _finish(args: argparse.Namespace, report: dict) -> None:
     _print_summary(report)
 
     out = Path(args.output)

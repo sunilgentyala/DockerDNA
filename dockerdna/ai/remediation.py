@@ -11,7 +11,31 @@ compose, secrets, supply-chain) into one remediation pass and produces:
 from __future__ import annotations
 
 import os
+import re
 from typing import Any, Optional
+
+_KEYED_SECRET_RE = re.compile(
+    r"(?i)((?:password|passwd|secret|token|api_?key|private_?key|access_?key)\w*"
+    r"\s*[=:]\s*)(?:\"[^\"]*\"|'[^']*'|\S+)"
+)
+
+
+def _read_redacted(path: str) -> str:
+    """Read a file for the LLM prompt with every detected secret masked.
+
+    Raw Dockerfile/compose text must never leave the machine: the scanner's
+    own redaction would otherwise be bypassed by this path.
+    """
+    from dockerdna.scanners.secrets import SecretsScanner
+
+    scanner = SecretsScanner(redact=True)
+    out: list[str] = []
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        for lineno, line in enumerate(fh.read()[:3000].splitlines(), start=1):
+            hits = scanner._check_line(path, lineno, line)
+            line = hits[0].line_content if hits else line
+            out.append(_KEYED_SECRET_RE.sub(r"\1****", line))
+    return "\n".join(out)
 
 
 def _build_context(
@@ -56,14 +80,14 @@ def _build_context(
     # Append file contents (truncated)
     if dockerfile_path and os.path.exists(dockerfile_path):
         try:
-            content = open(dockerfile_path).read()[:3000]
+            content = _read_redacted(dockerfile_path)
             parts.append(f"\n=== Current Dockerfile ===\n{content}")
         except Exception:
             pass
 
     if compose_path and os.path.exists(compose_path):
         try:
-            content = open(compose_path).read()[:3000]
+            content = _read_redacted(compose_path)
             parts.append(f"\n=== Current docker-compose.yml ===\n{content}")
         except Exception:
             pass
