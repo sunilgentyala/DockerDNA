@@ -3,6 +3,21 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+- Compose findings now carry the real source line in `line_hint` (and the compose file path in
+  `file`). Key-level checks point at the offending key, list-based checks (Docker socket and
+  sensitive mounts, privileged ports) point at the exact list entry, env secrets point at the
+  variable, and "missing setting" checks point at the service. Previously `line_hint` was always
+  null and every compose result landed on line 1.
+
+### Fixed
+
+- SARIF compose results used a hardcoded `docker-compose.yml` path; they now use the scanned
+  file's actual path, so `compose.yml` and other names annotate correctly.
+
 ## [1.1.0]
 
 ### Added
