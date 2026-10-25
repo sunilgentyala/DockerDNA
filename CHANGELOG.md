@@ -3,7 +3,7 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [1.1.1]
 
 ### Added
 
@@ -15,6 +15,7 @@ All notable changes to this project are documented here. Format loosely follows
 
 ### Fixed
 
+- GitHub Actions dependencies bumped (checkout 7, upload-artifact 7, configure-pages 6, deploy-pages 5, codecov 7), still SHA-pinned.
 - SARIF compose results used a hardcoded `docker-compose.yml` path; they now use the scanned
   file's actual path, so `compose.yml` and other names annotate correctly.
 
