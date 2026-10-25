@@ -69,7 +69,7 @@ def _print_summary(report: dict) -> None:
                     if f.get("type")
                     else ""
                 )
-                or str(f.get("factors", ""))
+                or "; ".join(f.get("factors", []))
             )
             svc = f.get("service", "") or f.get("file", "")
             loc = f" [{svc}]" if svc else ""

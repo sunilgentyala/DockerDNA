@@ -3,6 +3,23 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.0]
+
+### Added
+
+- New Dockerfile rules (DD-1 to DD-5, outside the CIS score): `curl | bash` style pipe-to-shell,
+  disabled TLS verification (`--no-check-certificate`, `curl -k`, `--trusted-host`), `chmod 777`,
+  `apt-get install` without `--no-install-recommends`, and literal credentials written by `RUN`.
+- Compose `image:` references are checked for untagged/`:latest` use and scored by the
+  supply-chain scanner (stage `compose:<service>`).
+- Compose `env_file:` entries are resolved relative to the compose file and scanned for secrets.
+- Golden tests over the example files, plus Dependabot and CodeQL configuration.
+- Refreshed demo GIF showing v1.1 output and the fail-closed exit code.
+
+### Fixed
+
+- Supply-chain findings in the terminal summary printed a Python list repr; they are now joined.
+
 ## [1.0.8]
 
 ### Security

@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Optional
 
 from dockerdna.reports.html import generate_html
@@ -122,6 +123,9 @@ def scan(
     compose_findings = []
     if compose_file:
         compose_findings = compose_scanner.scan(compose_file)
+        # env_file entries hold runtime secrets; scan them like any other file
+        for env_path in compose_scanner.env_files:
+            secret_findings.extend(secrets_scanner.scan_file(env_path))
 
     # Dockerfile + layers
     layers: list = []
@@ -131,6 +135,12 @@ def scan(
 
     # Supply chain
     supply_chain_findings = supply_chain_scanner.analyze_base_images(layers)
+    # Compose service images are runtime base images too
+    compose_layers = [
+        SimpleNamespace(instruction="FROM", arguments=ref, stage=f"compose:{svc}")
+        for svc, ref in compose_scanner.images
+    ]
+    supply_chain_findings += supply_chain_scanner.analyze_base_images(compose_layers)
 
     # Compliance
     compliance_report = compliance_mapper.generate(

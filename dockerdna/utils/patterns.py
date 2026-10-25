@@ -371,7 +371,58 @@ CIS_RULES: list[CISRule] = [
 ]
 
 # Lookup by check_key
+# DockerDNA-specific rules that have no CIS control. Kept out of CIS_RULES so the
+# CIS compliance score is unchanged; they are still reported as normal findings.
+DD_RULES: list[CISRule] = [
+    CISRule(
+        "DD-1",
+        "Remote script piped straight into a shell",
+        1,
+        "HIGH",
+        "Piping curl/wget output into sh/bash runs unverified code at build time.",
+        "Download to a file, verify a pinned checksum or signature, then execute it.",
+        "pipe_to_shell",
+    ),
+    CISRule(
+        "DD-2",
+        "TLS verification disabled for a download or package install",
+        1,
+        "HIGH",
+        "Disabling certificate checks lets a network attacker tamper with build inputs.",
+        "Remove --no-check-certificate / -k / --trusted-host and fix the CA trust instead.",
+        "insecure_download",
+    ),
+    CISRule(
+        "DD-3",
+        "World-writable permissions set in the image",
+        1,
+        "MEDIUM",
+        "chmod 777 lets any process in the container modify the path.",
+        "Grant the narrowest mode and owner needed (for example 750 and chown to the app user).",
+        "world_writable",
+    ),
+    CISRule(
+        "DD-4",
+        "apt-get install without --no-install-recommends",
+        1,
+        "LOW",
+        "Recommended packages enlarge the image and its attack surface.",
+        "Use `apt-get install --no-install-recommends` and clean /var/lib/apt/lists in the same layer.",
+        "apt_recommends",
+    ),
+    CISRule(
+        "DD-5",
+        "Credential written by a RUN instruction",
+        1,
+        "HIGH",
+        "A literal credential in a RUN command is baked into the layer history.",
+        "Use `RUN --mount=type=secret` and read the value from /run/secrets at build time.",
+        "secret_in_run",
+    ),
+]
+
 CIS_RULE_MAP: dict[str, CISRule] = {r.check_key: r for r in CIS_RULES}
+CIS_RULE_MAP.update({r.check_key: r for r in DD_RULES})
 CIS_RULE_BY_ID: dict[str, CISRule] = {r.id: r for r in CIS_RULES}
 
 # ---------------------------------------------------------------------------

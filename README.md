@@ -117,9 +117,9 @@ dockerdna Dockerfile --compose docker-compose.yml --ai
 
 Output is written to `./dockerdna-results/` by default.
 
-![DockerDNA scanning a Dockerfile with a hardcoded AWS key and a root user](docs/demo.gif)
+![DockerDNA scanning a Dockerfile and compose file, then failing closed on a missing file](docs/demo.gif)
 
-<sub>Replay of the real output of `dockerdna Dockerfile` (v1.0.7) on a deliberately insecure sample Dockerfile, rendered from captured terminal output (not a live screen recording). The key in the sample is AWS's public documentation example.</sub>
+<sub>Replay of the real output of `dockerdna Dockerfile` (v1.1.0) on a deliberately insecure sample Dockerfile and compose file, followed by a scan with a missing compose file that now exits 2 instead of passing. Rendered from captured terminal output (not a live screen recording). The key in the sample is AWS's public documentation example.</sub>
 
 ---
 

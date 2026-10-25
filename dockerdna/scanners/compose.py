@@ -67,6 +67,8 @@ class ComposeScanner:
 
     def __init__(self) -> None:
         self.errors: list[str] = []
+        self.images: list[tuple[str, str]] = []  # (service, image ref)
+        self.env_files: list[Path] = []  # resolved env_file paths
 
     def scan(self, path: str | Path) -> list[ComposeFinding]:
         path = Path(path)
@@ -89,6 +91,7 @@ class ComposeScanner:
             self.errors.append(f"{path}: compose file is not a YAML mapping")
             return []
 
+        self._base_dir = path.parent
         services = doc.get("services", {}) or {}
         findings: list[ComposeFinding] = []
         for svc_name, svc_conf in services.items():
@@ -105,6 +108,27 @@ class ComposeScanner:
         # CIS-5.4 - privileged
         if _truthy(cfg.get("privileged")):
             findings.append(self._make(name, "privileged", "Privileged mode enabled"))
+
+        image = cfg.get("image")
+        if isinstance(image, str) and image.strip():
+            self.images.append((name, image.strip()))
+            ref = image.strip()
+            if "@sha256:" not in ref and not ref.startswith("${"):
+                last = ref.rsplit("/", 1)[-1]
+                if ":" not in last or last.endswith(":latest"):
+                    findings.append(
+                        self._make(
+                            name, "latest_tag", f"Image '{ref}' uses :latest or no tag"
+                        )
+                    )
+
+        env_file = cfg.get("env_file")
+        entries = env_file if isinstance(env_file, list) else [env_file]
+        for entry in entries:
+            if isinstance(entry, dict):
+                entry = entry.get("path")
+            if isinstance(entry, str) and entry:
+                self.env_files.append(self._base_dir / entry)
 
         # Service runs as root explicitly
         svc_user = str(cfg.get("user", "") or "").strip().split(":")[0]
