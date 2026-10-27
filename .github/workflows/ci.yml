@@ -74,12 +74,6 @@ jobs:
             --format json sarif \
             --output dockerdna-results-vulnerable
 
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370  # v4
-        if: always()
-        with:
-          sarif_file: dockerdna-results-vulnerable/report.sarif
-
       - name: Upload scan artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         if: always()
