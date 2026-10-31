@@ -397,7 +397,7 @@ DD_RULES: list[CISRule] = [
         "World-writable permissions set in the image",
         1,
         "MEDIUM",
-        "chmod 777 lets any process in the container modify the path.",
+        "World-writable permissions let any process in the container modify the path.",
         "Grant the narrowest mode and owner needed (for example 750 and chown to the app user).",
         "world_writable",
     ),

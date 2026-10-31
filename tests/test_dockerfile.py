@@ -3,6 +3,8 @@
 import os
 import tempfile
 
+import pytest
+
 from dockerdna.scanners.dockerfile import DockerfileScanner
 
 
@@ -41,3 +43,20 @@ class TestEnvSecretRedaction:
         env_findings = [f for f in findings if f.check_key == "env_secret"]
         assert env_findings
         assert any("mysupersecret123" in f.detail for f in env_findings)
+
+
+@pytest.mark.parametrize("mode", ["a+w", "-R a+w", "a+rw", "a+rwx", "777", "-R 0777"])
+def test_world_writable_mode_has_layer_attribution(mode):
+    _, findings = _scan_text(
+        DockerfileScanner(), f"FROM alpine:3.20 AS app\nRUN chmod {mode} /app\nUSER app\n"
+    )
+    hits = [f for f in findings if f.check_key == "world_writable"]
+    assert len(hits) == 1
+    assert hits[0].line_number == 2
+    assert hits[0].stage == "app"
+
+
+@pytest.mark.parametrize("mode", ["750", "u+w", "g+w", "a+r", "a+rx", "a-w", "a+w-w", "a+w,o-w"])
+def test_restricted_chmod_mode_is_not_world_writable(mode):
+    _, findings = _scan_text(DockerfileScanner(), f"FROM alpine:3.20\nRUN chmod {mode} /app\n")
+    assert not any(f.check_key == "world_writable" for f in findings)

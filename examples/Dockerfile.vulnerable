@@ -19,6 +19,9 @@ RUN service ssh start
 # Hardcoded AWS key
 RUN echo "aws_access_key_id=AKIAIOSFODNN7EXAMPLE" >> /root/.aws/credentials
 
+# World-writable permissions
+RUN chmod a+w /tmp
+
 # Missing HEALTHCHECK
 # Missing USER instruction (runs as root)
 
