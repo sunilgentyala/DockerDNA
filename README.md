@@ -62,7 +62,8 @@ Audits docker-compose files and maps every finding to a specific CIS Docker Benc
 ```
 
 Dockerfile checks also flag world-writable permissions from `chmod 777` and
-symbolic modes such as `chmod a+w`, with the introducing layer identified.
+simple symbolic modes such as `chmod a+w`, with the introducing layer identified.
+Compound symbolic modes (for example `a+w,o-w`) are not evaluated.
 
 ### 3. CIS Docker Benchmark v1.6 Compliance Report
 

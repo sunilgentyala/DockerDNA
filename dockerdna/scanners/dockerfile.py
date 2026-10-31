@@ -32,7 +32,7 @@ _INSECURE_DOWNLOAD_RE = re.compile(
     r"|--trusted-host|strict-ssl\s+false|GIT_SSL_NO_VERIFY|sslverify\s*=?\s*false",
     re.IGNORECASE,
 )
-_WORLD_WRITABLE_RE = re.compile(r"\bchmod\s+(-\w+\s+)*(a\+[rx]*w[rwx]*|0?777)\b")
+_WORLD_WRITABLE_RE = re.compile(r"\bchmod\s+(-\w+\s+)*(a\+[rx]*w[rwx]*|0?777)(?=\s|$)")
 _RUN_SECRET_RE = re.compile(
     r"(?i)(?P<key>password|passwd|secret|api_?key|token|private_?key)\w*"
     r"\s*[=:]\s*(?P<value>\"[^\"$]{4,}\"|'[^'$]{4,}'|[^\s\"'$]{4,})"
@@ -307,7 +307,9 @@ class DockerfileScanner:
         if _WORLD_WRITABLE_RE.search(args):
             out.append(
                 self._finding(
-                    layer, "world_writable", "chmod grants write permission to everyone on a path in the image"
+                    layer,
+                    "world_writable",
+                    "chmod grants write permission to everyone on a path in the image",
                 )
             )
         if (

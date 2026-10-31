@@ -56,7 +56,7 @@ def test_world_writable_mode_has_layer_attribution(mode):
     assert hits[0].stage == "app"
 
 
-@pytest.mark.parametrize("mode", ["750", "u+w", "g+w", "a+r", "a+rx", "a-w"])
+@pytest.mark.parametrize("mode", ["750", "u+w", "g+w", "a+r", "a+rx", "a-w", "a+w-w", "a+w,o-w"])
 def test_restricted_chmod_mode_is_not_world_writable(mode):
     _, findings = _scan_text(DockerfileScanner(), f"FROM alpine:3.20\nRUN chmod {mode} /app\n")
     assert not any(f.check_key == "world_writable" for f in findings)
