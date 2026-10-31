@@ -61,6 +61,9 @@ Audits docker-compose files and maps every finding to a specific CIS Docker Benc
 [MEDIUM]   CIS-5.12 webapp: read_only not set to true
 ```
 
+Dockerfile checks also flag world-writable permissions from `chmod 777` and
+symbolic modes such as `chmod a+w`, with the introducing layer identified.
+
 ### 3. CIS Docker Benchmark v1.6 Compliance Report
 
 Every finding is tagged with its CIS control ID. A full scorecard is generated — real output
