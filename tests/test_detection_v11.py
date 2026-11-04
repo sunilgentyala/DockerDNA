@@ -128,6 +128,7 @@ def test_golden_vulnerable_example_minimum_findings(tmp_path):
         "env_secret",
         "update_without_install",
         "ssh_in_container",
+        "world_writable",
         "no_user",
     } <= df
     assert {"privileged", "docker_socket", "host_network"} <= cf
@@ -143,4 +144,5 @@ def test_golden_secure_example_has_no_critical(tmp_path):
         formats=["json"],
     )
     assert report["summary"]["by_severity"]["CRITICAL"] == 0
+    assert not any(f["check"] == "world_writable" for f in report["findings"]["dockerfile"])
     assert report["scan_errors"] == []

@@ -564,7 +564,8 @@
         <p>Parses the Dockerfile layer-by-layer. Detects <code>:latest</code> tags without digest pinning,
            unnecessary packages (<code>curl</code>, <code>vim</code>, <code>gcc</code>&hellip;), missing
            <code>USER</code> and <code>HEALTHCHECK</code>, secrets leaking across multi-stage builds,
-           and SSH server installation. Each FROM image receives a 0&ndash;100 supply chain risk score
+           SSH server installation, and world-writable permissions (<code>chmod 777</code> or
+           <code>chmod a+w</code>). Each FROM image receives a 0&ndash;100 supply chain risk score
            based on registry trust, tag specificity, and Docker Content Trust status.</p>
       </div>
     </div>
